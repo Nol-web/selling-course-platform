@@ -1,0 +1,915 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>커리큘럼 빌더</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #171a1f;
+      --muted: #626a78;
+      --line: #dfe3ea;
+      --soft: #eef2f6;
+      --accent: #166f63;
+      --accent-2: #b94d28;
+      --focus: #2f80ed;
+      --danger: #bf2d2d;
+      --shadow: 0 10px 28px rgba(31, 38, 50, 0.08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      border-radius: 7px;
+      min-height: 36px;
+      padding: 0 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    button:hover { border-color: #aeb7c4; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 1px;
+    }
+
+    .primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .danger {
+      border-color: #f0c7c7;
+      color: var(--danger);
+    }
+
+    .icon-btn {
+      width: 36px;
+      padding: 0;
+      flex: 0 0 36px;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 290px minmax(0, 1fr) 360px;
+    }
+
+    aside, main {
+      min-width: 0;
+    }
+
+    .sidebar {
+      background: #20252d;
+      color: #f7f9fb;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .sidebar button {
+      border-color: rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+    }
+
+    .course-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .course-tab {
+      border: 1px solid rgba(255,255,255,.12);
+      background: transparent;
+      color: #dce3ea;
+      width: 100%;
+      min-height: 54px;
+      padding: 10px;
+      text-align: left;
+      justify-content: flex-start;
+      display: block;
+    }
+
+    .course-tab.active {
+      background: #ffffff;
+      border-color: #ffffff;
+      color: var(--ink);
+    }
+
+    .course-tab strong, .course-tab span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .course-tab strong {
+      font-size: 14px;
+      margin-bottom: 3px;
+    }
+
+    .course-tab span {
+      font-size: 12px;
+      color: inherit;
+      opacity: .72;
+    }
+
+    .workspace {
+      padding: 20px;
+      overflow: auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.25;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .course-meta {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      min-width: 0;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      min-height: 38px;
+      padding: 8px 10px;
+    }
+
+    textarea {
+      min-height: 74px;
+      resize: vertical;
+    }
+
+    .wide { grid-column: span 2; }
+    .full { grid-column: 1 / -1; }
+
+    .sections {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+
+    .section-title {
+      display: grid;
+      grid-template-columns: 46px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+    }
+
+    .section-index {
+      height: 38px;
+      border-radius: 7px;
+      background: var(--soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .section-tools {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .lesson-list {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .lesson {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) 88px 116px 86px;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .lesson-num {
+      width: 34px;
+      height: 34px;
+      border-radius: 7px;
+      background: #f2f5f7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .lesson-fields {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .lesson-title-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .lesson-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .preview {
+      border-left: 1px solid var(--line);
+      background: #ffffff;
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .preview h2 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      line-height: 1.25;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .stat {
+      background: var(--soft);
+      border-radius: 8px;
+      padding: 10px;
+      min-width: 0;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 18px;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .outline {
+      border-top: 1px solid var(--line);
+      margin-top: 14px;
+      padding-top: 14px;
+    }
+
+    .outline-section {
+      margin-bottom: 16px;
+    }
+
+    .outline-section h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .outline ol {
+      margin: 0;
+      padding-left: 22px;
+      color: #333943;
+    }
+
+    .outline li {
+      margin: 6px 0;
+      overflow-wrap: anywhere;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: #e8f3f0;
+      color: var(--accent);
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      background: #171a1f;
+      color: #fff;
+      border-radius: 8px;
+      padding: 10px 14px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+      z-index: 5;
+    }
+
+    .toast.show { opacity: 1; }
+
+    .empty {
+      border: 1px dashed #c2c9d3;
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      background: #fff;
+    }
+
+    @media (max-width: 1180px) {
+      .app { grid-template-columns: 260px minmax(0, 1fr); }
+      .preview { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); }
+      .lesson { grid-template-columns: 34px minmax(0, 1fr); }
+      .lesson-actions { justify-content: flex-start; }
+    }
+
+    @media (max-width: 760px) {
+      .app { display: block; }
+      .sidebar { min-height: auto; }
+      .course-meta { grid-template-columns: 1fr; }
+      .wide, .full { grid-column: auto; }
+      .topbar { align-items: stretch; flex-direction: column; }
+      .actions { justify-content: flex-start; }
+      .section-head { grid-template-columns: 1fr; }
+      .section-tools { justify-content: flex-start; }
+      .section-title { grid-template-columns: 40px minmax(0, 1fr); }
+      .lesson-fields, .lesson-title-row { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>커리큘럼 빌더</h1>
+        <button class="icon-btn" id="addCourseBtn" title="강의 추가">+</button>
+      </div>
+      <div class="course-list" id="courseList"></div>
+    </aside>
+
+    <main class="workspace">
+      <div class="topbar">
+        <h2 id="editorTitle">강의 편집</h2>
+        <div class="actions">
+          <button id="importBtn" title="JSON 불러오기">불러오기</button>
+          <button id="exportBtn" title="JSON 내보내기">내보내기</button>
+          <button id="addSectionBtn" class="primary" title="섹션 추가">섹션 추가</button>
+        </div>
+      </div>
+
+      <section class="course-meta" id="courseMeta"></section>
+      <section class="sections" id="sections"></section>
+    </main>
+
+    <aside class="preview">
+      <h2 id="previewTitle"></h2>
+      <div id="previewTags"></div>
+      <div class="stats" id="stats"></div>
+      <p id="previewDescription"></p>
+      <div class="outline" id="outline"></div>
+    </aside>
+  </div>
+
+  <input id="fileInput" type="file" accept="application/json,.json" hidden>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const storageKey = "youtube-curriculum-builder-v1";
+
+    const sampleData = {
+      selectedCourseId: "course-1",
+      courses: [
+        {
+          id: "course-1",
+          title: "새 프로젝트 강의",
+          category: "웹 개발",
+          level: "입문",
+          projectType: "프로젝트 실습",
+          techStack: "HTML, CSS, JavaScript",
+          estimatedHours: 4,
+          description: "유튜브 영상을 직접 연결해 하나의 강의 커리큘럼으로 구성합니다.",
+          sections: [
+            {
+              id: "section-1",
+              title: "시작하기",
+              goal: "프로젝트 목표와 개발 환경을 정리합니다.",
+              lessons: [
+                {
+                  id: "lesson-1",
+                  title: "강의 소개",
+                  youtubeUrl: "",
+                  duration: "10:00",
+                  materialUrl: "",
+                  status: "초안"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+
+    let state = loadState();
+
+    const els = {
+      addCourseBtn: document.getElementById("addCourseBtn"),
+      courseList: document.getElementById("courseList"),
+      editorTitle: document.getElementById("editorTitle"),
+      courseMeta: document.getElementById("courseMeta"),
+      sections: document.getElementById("sections"),
+      addSectionBtn: document.getElementById("addSectionBtn"),
+      exportBtn: document.getElementById("exportBtn"),
+      importBtn: document.getElementById("importBtn"),
+      fileInput: document.getElementById("fileInput"),
+      previewTitle: document.getElementById("previewTitle"),
+      previewTags: document.getElementById("previewTags"),
+      previewDescription: document.getElementById("previewDescription"),
+      stats: document.getElementById("stats"),
+      outline: document.getElementById("outline"),
+      toast: document.getElementById("toast")
+    };
+
+    function uid(prefix) {
+      return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(storageKey);
+        return saved ? JSON.parse(saved) : structuredClone(sampleData);
+      } catch {
+        return structuredClone(sampleData);
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    }
+
+    function selectedCourse() {
+      return state.courses.find(course => course.id === state.selectedCourseId) || state.courses[0];
+    }
+
+    function setCourseValue(field, value) {
+      const course = selectedCourse();
+      course[field] = field === "estimatedHours" ? Number(value || 0) : value;
+      saveAndRefresh();
+    }
+
+    function setSectionValue(sectionId, field, value) {
+      const section = selectedCourse().sections.find(item => item.id === sectionId);
+      section[field] = value;
+      saveAndRefresh();
+    }
+
+    function setLessonValue(sectionId, lessonId, field, value) {
+      const section = selectedCourse().sections.find(item => item.id === sectionId);
+      const lesson = section.lessons.find(item => item.id === lessonId);
+      lesson[field] = value;
+      saveAndRefresh();
+    }
+
+    function saveAndRender() {
+      saveState();
+      render();
+    }
+
+    function saveAndRefresh() {
+      const course = selectedCourse();
+      saveState();
+      els.editorTitle.textContent = course.title || "제목 없는 강의";
+      renderCourseList(course);
+      renderPreview(course);
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1800);
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function render() {
+      if (!state.courses.length) {
+        state = structuredClone(sampleData);
+        saveState();
+      }
+      const course = selectedCourse();
+      state.selectedCourseId = course.id;
+      renderCourseList(course);
+      renderCourseMeta(course);
+      renderSections(course);
+      renderPreview(course);
+    }
+
+    function renderCourseList(activeCourse) {
+      els.courseList.innerHTML = state.courses.map(course => {
+        const lessonCount = course.sections.reduce((sum, section) => sum + section.lessons.length, 0);
+        return `
+          <button class="course-tab ${course.id === activeCourse.id ? "active" : ""}" data-course-id="${course.id}">
+            <strong>${escapeHtml(course.title || "제목 없는 강의")}</strong>
+            <span>${escapeHtml(course.category || "카테고리 없음")} · ${lessonCount}개 영상</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function renderCourseMeta(course) {
+      els.editorTitle.textContent = course.title || "제목 없는 강의";
+      els.courseMeta.innerHTML = `
+        <label class="wide">강의명
+          <input value="${escapeHtml(course.title)}" data-course-field="title">
+        </label>
+        <label>카테고리
+          <input value="${escapeHtml(course.category)}" data-course-field="category">
+        </label>
+        <label>난이도
+          <select data-course-field="level">
+            ${["입문", "초급", "중급", "고급"].map(level => `<option ${course.level === level ? "selected" : ""}>${level}</option>`).join("")}
+          </select>
+        </label>
+        <label>프로젝트 유형
+          <input value="${escapeHtml(course.projectType)}" data-course-field="projectType">
+        </label>
+        <label>예상 시간
+          <input type="number" min="0" step="0.5" value="${escapeHtml(course.estimatedHours)}" data-course-field="estimatedHours">
+        </label>
+        <label class="wide">기술 스택
+          <input value="${escapeHtml(course.techStack)}" data-course-field="techStack">
+        </label>
+        <label class="full">강의 설명
+          <textarea data-course-field="description">${escapeHtml(course.description)}</textarea>
+        </label>
+      `;
+    }
+
+    function renderSections(course) {
+      if (!course.sections.length) {
+        els.sections.innerHTML = `<div class="empty">아직 섹션이 없습니다.</div>`;
+        return;
+      }
+
+      els.sections.innerHTML = course.sections.map((section, sectionIndex) => `
+        <article class="section" data-section-id="${section.id}">
+          <div class="section-head">
+            <div class="section-title">
+              <div class="section-index">${sectionIndex + 1}</div>
+              <div>
+                <label>섹션명
+                  <input value="${escapeHtml(section.title)}" data-section-field="title">
+                </label>
+              </div>
+            </div>
+            <div class="section-tools">
+              <button class="icon-btn" data-action="move-section-up" title="섹션 위로">↑</button>
+              <button class="icon-btn" data-action="move-section-down" title="섹션 아래로">↓</button>
+              <button data-action="add-lesson" title="영상 레슨 추가">영상 추가</button>
+              <button class="danger icon-btn" data-action="delete-section" title="섹션 삭제">×</button>
+            </div>
+            <label class="full">섹션 목표
+              <textarea data-section-field="goal">${escapeHtml(section.goal)}</textarea>
+            </label>
+          </div>
+          <div class="lesson-list">
+            ${section.lessons.length ? section.lessons.map((lesson, lessonIndex) => renderLesson(section.id, lesson, lessonIndex)).join("") : `<div class="empty">영상 레슨을 추가하세요.</div>`}
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderLesson(sectionId, lesson, lessonIndex) {
+      return `
+        <div class="lesson" data-lesson-id="${lesson.id}">
+          <div class="lesson-num">${lessonIndex + 1}</div>
+          <div class="lesson-fields">
+            <div class="lesson-title-row">
+              <label>영상 제목
+                <input value="${escapeHtml(lesson.title)}" data-lesson-field="title">
+              </label>
+              <label>유튜브 링크
+                <input value="${escapeHtml(lesson.youtubeUrl)}" placeholder="https://youtube.com/..." data-lesson-field="youtubeUrl">
+              </label>
+            </div>
+            <label>자료 링크
+              <input value="${escapeHtml(lesson.materialUrl)}" data-lesson-field="materialUrl">
+            </label>
+            <label>상태
+              <select data-lesson-field="status">
+                ${["초안", "촬영 완료", "편집 완료", "공개"].map(status => `<option ${lesson.status === status ? "selected" : ""}>${status}</option>`).join("")}
+              </select>
+            </label>
+          </div>
+          <label>길이
+            <input value="${escapeHtml(lesson.duration)}" placeholder="12:30" data-lesson-field="duration">
+          </label>
+          <div class="lesson-actions">
+            <button class="icon-btn" data-section-id="${sectionId}" data-action="move-lesson-up" title="영상 위로">↑</button>
+            <button class="icon-btn" data-section-id="${sectionId}" data-action="move-lesson-down" title="영상 아래로">↓</button>
+            <button class="danger icon-btn" data-section-id="${sectionId}" data-action="delete-lesson" title="영상 삭제">×</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPreview(course) {
+      const lessons = course.sections.flatMap(section => section.lessons);
+      const publicLessons = lessons.filter(lesson => lesson.status === "공개").length;
+      els.previewTitle.textContent = course.title || "제목 없는 강의";
+      els.previewTags.innerHTML = [course.category, course.level, course.projectType]
+        .filter(Boolean)
+        .map(tag => `<span class="badge">${escapeHtml(tag)}</span>`)
+        .join("");
+      els.stats.innerHTML = `
+        <div class="stat"><strong>${course.sections.length}</strong><span>섹션</span></div>
+        <div class="stat"><strong>${lessons.length}</strong><span>영상</span></div>
+        <div class="stat"><strong>${publicLessons}</strong><span>공개</span></div>
+      `;
+      els.previewDescription.textContent = course.description || "";
+      els.outline.innerHTML = course.sections.map((section, index) => `
+        <div class="outline-section">
+          <h3>${index + 1}. ${escapeHtml(section.title || "제목 없는 섹션")}</h3>
+          <ol>
+            ${section.lessons.map(lesson => `<li>${escapeHtml(lesson.title || "제목 없는 영상")} ${lesson.duration ? `<span class="badge">${escapeHtml(lesson.duration)}</span>` : ""}</li>`).join("")}
+          </ol>
+        </div>
+      `).join("");
+    }
+
+    function addCourse() {
+      const course = {
+        id: uid("course"),
+        title: "새 강의",
+        category: "",
+        level: "입문",
+        projectType: "",
+        techStack: "",
+        estimatedHours: 0,
+        description: "",
+        sections: []
+      };
+      state.courses.push(course);
+      state.selectedCourseId = course.id;
+      saveAndRender();
+    }
+
+    function addSection() {
+      selectedCourse().sections.push({
+        id: uid("section"),
+        title: "새 섹션",
+        goal: "",
+        lessons: []
+      });
+      saveAndRender();
+    }
+
+    function addLesson(sectionId) {
+      const section = selectedCourse().sections.find(item => item.id === sectionId);
+      section.lessons.push({
+        id: uid("lesson"),
+        title: "새 영상",
+        youtubeUrl: "",
+        duration: "",
+        materialUrl: "",
+        status: "초안"
+      });
+      saveAndRender();
+    }
+
+    function moveItem(list, id, direction) {
+      const index = list.findIndex(item => item.id === id);
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= list.length) return;
+      const [item] = list.splice(index, 1);
+      list.splice(nextIndex, 0, item);
+      saveAndRender();
+    }
+
+    function deleteSection(sectionId) {
+      const course = selectedCourse();
+      course.sections = course.sections.filter(section => section.id !== sectionId);
+      saveAndRender();
+    }
+
+    function deleteLesson(sectionId, lessonId) {
+      const section = selectedCourse().sections.find(item => item.id === sectionId);
+      section.lessons = section.lessons.filter(lesson => lesson.id !== lessonId);
+      saveAndRender();
+    }
+
+    function exportJson() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "curriculum.json";
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("JSON 파일을 내보냈습니다.");
+    }
+
+    function importJson(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const nextState = JSON.parse(reader.result);
+          if (!Array.isArray(nextState.courses)) throw new Error("Invalid curriculum JSON");
+          state = nextState;
+          if (!state.selectedCourseId && state.courses[0]) state.selectedCourseId = state.courses[0].id;
+          saveAndRender();
+          showToast("커리큘럼을 불러왔습니다.");
+        } catch {
+          showToast("불러올 수 없는 JSON입니다.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    els.addCourseBtn.addEventListener("click", addCourse);
+    els.addSectionBtn.addEventListener("click", addSection);
+    els.exportBtn.addEventListener("click", exportJson);
+    els.importBtn.addEventListener("click", () => els.fileInput.click());
+    els.fileInput.addEventListener("change", event => {
+      const file = event.target.files[0];
+      if (file) importJson(file);
+      event.target.value = "";
+    });
+
+    els.courseList.addEventListener("click", event => {
+      const tab = event.target.closest("[data-course-id]");
+      if (!tab) return;
+      state.selectedCourseId = tab.dataset.courseId;
+      saveAndRender();
+    });
+
+    els.courseMeta.addEventListener("input", event => {
+      const field = event.target.dataset.courseField;
+      if (field) setCourseValue(field, event.target.value);
+    });
+
+    els.courseMeta.addEventListener("change", event => {
+      const field = event.target.dataset.courseField;
+      if (field) setCourseValue(field, event.target.value);
+    });
+
+    els.sections.addEventListener("input", event => {
+      const sectionEl = event.target.closest("[data-section-id]");
+      const lessonEl = event.target.closest("[data-lesson-id]");
+      if (!sectionEl) return;
+      if (lessonEl && event.target.dataset.lessonField) {
+        setLessonValue(sectionEl.dataset.sectionId, lessonEl.dataset.lessonId, event.target.dataset.lessonField, event.target.value);
+      } else if (event.target.dataset.sectionField) {
+        setSectionValue(sectionEl.dataset.sectionId, event.target.dataset.sectionField, event.target.value);
+      }
+    });
+
+    els.sections.addEventListener("change", event => {
+      const sectionEl = event.target.closest("[data-section-id]");
+      const lessonEl = event.target.closest("[data-lesson-id]");
+      if (!sectionEl || !lessonEl || !event.target.dataset.lessonField) return;
+      setLessonValue(sectionEl.dataset.sectionId, lessonEl.dataset.lessonId, event.target.dataset.lessonField, event.target.value);
+    });
+
+    els.sections.addEventListener("click", event => {
+      const button = event.target.closest("[data-action]");
+      if (!button) return;
+      const sectionEl = button.closest("[data-section-id]");
+      const lessonEl = button.closest("[data-lesson-id]");
+      const sectionId = sectionEl?.dataset.sectionId;
+      const action = button.dataset.action;
+      const course = selectedCourse();
+      const section = course.sections.find(item => item.id === sectionId);
+
+      if (action === "add-lesson") addLesson(sectionId);
+      if (action === "delete-section") deleteSection(sectionId);
+      if (action === "move-section-up") moveItem(course.sections, sectionId, -1);
+      if (action === "move-section-down") moveItem(course.sections, sectionId, 1);
+      if (action === "delete-lesson") deleteLesson(sectionId, lessonEl.dataset.lessonId);
+      if (action === "move-lesson-up") moveItem(section.lessons, lessonEl.dataset.lessonId, -1);
+      if (action === "move-lesson-down") moveItem(section.lessons, lessonEl.dataset.lessonId, 1);
+    });
+
+    render();
+  </script>
+</body>
+</html>
