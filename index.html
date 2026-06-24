@@ -418,6 +418,13 @@
 
     .toast.show { opacity: 1; }
 
+    .help-text {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
     .empty {
       border: 1px dashed #c2c9d3;
       border-radius: 8px;
@@ -465,6 +472,7 @@
         <div class="actions">
           <button id="importBtn" title="JSON 불러오기">불러오기</button>
           <button id="exportBtn" title="JSON 내보내기">내보내기</button>
+          <button id="exportCoursePageBtn" title="현재 강의 페이지 생성">강의 페이지 생성</button>
           <button id="addSectionBtn" class="primary" title="섹션 추가">섹션 추가</button>
         </div>
       </div>
@@ -497,6 +505,7 @@
           category: "웹 개발",
           level: "입문",
           projectType: "프로젝트 실습",
+          pageSlug: "sample-course",
           techStack: "HTML, CSS, JavaScript",
           estimatedHours: 4,
           description: "유튜브 영상을 직접 연결해 하나의 강의 커리큘럼으로 구성합니다.",
@@ -531,6 +540,7 @@
       sections: document.getElementById("sections"),
       addSectionBtn: document.getElementById("addSectionBtn"),
       exportBtn: document.getElementById("exportBtn"),
+      exportCoursePageBtn: document.getElementById("exportCoursePageBtn"),
       importBtn: document.getElementById("importBtn"),
       fileInput: document.getElementById("fileInput"),
       previewTitle: document.getElementById("previewTitle"),
@@ -652,11 +662,15 @@
         <label>프로젝트 유형
           <input value="${escapeHtml(course.projectType)}" data-course-field="projectType">
         </label>
+        <label>페이지 파일명
+          <input value="${escapeHtml(course.pageSlug || slugify(course.title))}" placeholder="a-course" data-course-field="pageSlug">
+        </label>
         <label>예상 시간
           <input type="number" min="0" step="0.5" value="${escapeHtml(course.estimatedHours)}" data-course-field="estimatedHours">
         </label>
         <label class="wide">기술 스택
           <input value="${escapeHtml(course.techStack)}" data-course-field="techStack">
+          <p class="help-text">예: a-course 라고 쓰면 a-course.html 파일로 생성됩니다.</p>
         </label>
         <label class="full">강의 설명
           <textarea data-course-field="description">${escapeHtml(course.description)}</textarea>
@@ -763,6 +777,7 @@
         category: "",
         level: "입문",
         projectType: "",
+        pageSlug: "",
         techStack: "",
         estimatedHours: 0,
         description: "",
@@ -828,6 +843,162 @@
       showToast("JSON 파일을 내보냈습니다.");
     }
 
+    function slugify(value) {
+      const fallback = "course-page";
+      const slug = String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9가-힣]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      return slug || fallback;
+    }
+
+    function youtubeEmbedUrl(url) {
+      const raw = String(url || "").trim();
+      if (!raw) return "";
+      try {
+        const parsed = new URL(raw);
+        let id = "";
+        if (parsed.hostname.includes("youtu.be")) {
+          id = parsed.pathname.replace("/", "");
+        } else if (parsed.searchParams.get("v")) {
+          id = parsed.searchParams.get("v");
+        } else if (parsed.pathname.includes("/shorts/")) {
+          id = parsed.pathname.split("/shorts/")[1].split("/")[0];
+        } else if (parsed.pathname.includes("/embed/")) {
+          id = parsed.pathname.split("/embed/")[1].split("/")[0];
+        }
+        return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}` : "";
+      } catch {
+        return "";
+      }
+    }
+
+    function coursePageHtml(course) {
+      const lessons = course.sections.flatMap(section => section.lessons);
+      const tags = [course.category, course.level, course.projectType].filter(Boolean);
+      const stack = String(course.techStack || "")
+        .split(",")
+        .map(item => item.trim())
+        .filter(Boolean);
+
+      return `<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(course.title || "강의 페이지")}</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --ink: #171a1f;
+      --muted: #626a78;
+      --line: #dfe3ea;
+      --panel: #ffffff;
+      --accent: #166f63;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); }
+    a { color: var(--accent); text-decoration: none; }
+    .hero { background: #20252d; color: white; padding: 42px 20px 34px; }
+    .wrap { width: min(1080px, calc(100% - 32px)); margin: 0 auto; }
+    .hero h1 { margin: 0 0 12px; font-size: clamp(30px, 5vw, 54px); line-height: 1.08; letter-spacing: 0; overflow-wrap: anywhere; }
+    .hero p { max-width: 760px; color: #d6dee8; font-size: 17px; line-height: 1.65; margin: 0; }
+    .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .tag { display: inline-flex; align-items: center; border-radius: 999px; background: rgba(255,255,255,.12); color: white; padding: 6px 10px; font-size: 13px; font-weight: 700; }
+    .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0 0; max-width: 620px; }
+    .summary div { border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 12px; background: rgba(255,255,255,.07); }
+    .summary strong { display: block; font-size: 22px; }
+    .summary span { color: #c5ced8; font-size: 13px; }
+    main { padding: 28px 0 50px; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 22px; align-items: start; }
+    .section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+    .section-head { padding: 18px; border-bottom: 1px solid var(--line); background: #fbfcfd; }
+    .section-head h2 { margin: 0 0 6px; font-size: 21px; letter-spacing: 0; overflow-wrap: anywhere; }
+    .section-head p { margin: 0; color: var(--muted); line-height: 1.55; }
+    .lesson { padding: 16px 18px; border-bottom: 1px solid var(--line); }
+    .lesson:last-child { border-bottom: 0; }
+    .lesson h3 { margin: 0 0 10px; font-size: 17px; letter-spacing: 0; overflow-wrap: anywhere; }
+    .lesson-meta { display: flex; gap: 8px; flex-wrap: wrap; color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+    .player { aspect-ratio: 16 / 9; width: 100%; border: 0; border-radius: 8px; background: #111; }
+    .no-video { border: 1px dashed #b8c1cc; border-radius: 8px; padding: 18px; color: var(--muted); background: #f8fafc; }
+    .side { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; position: sticky; top: 18px; }
+    .side h2 { margin: 0 0 12px; font-size: 17px; letter-spacing: 0; }
+    .side ul { margin: 0; padding-left: 18px; color: #333943; line-height: 1.8; }
+    @media (max-width: 820px) {
+      .summary, .grid { grid-template-columns: 1fr; }
+      .side { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <div class="tags">${tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
+      <h1>${escapeHtml(course.title || "제목 없는 강의")}</h1>
+      <p>${escapeHtml(course.description || "")}</p>
+      <div class="summary">
+        <div><strong>${course.sections.length}</strong><span>섹션</span></div>
+        <div><strong>${lessons.length}</strong><span>영상</span></div>
+        <div><strong>${escapeHtml(course.estimatedHours || 0)}</strong><span>예상 시간</span></div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="grid">
+      <div>
+        ${course.sections.map((section, sectionIndex) => `
+          <section class="section">
+            <div class="section-head">
+              <h2>${sectionIndex + 1}. ${escapeHtml(section.title || "제목 없는 섹션")}</h2>
+              <p>${escapeHtml(section.goal || "")}</p>
+            </div>
+            ${section.lessons.map((lesson, lessonIndex) => {
+              const embedUrl = youtubeEmbedUrl(lesson.youtubeUrl);
+              return `
+                <article class="lesson">
+                  <h3>${sectionIndex + 1}-${lessonIndex + 1}. ${escapeHtml(lesson.title || "제목 없는 영상")}</h3>
+                  <div class="lesson-meta">
+                    ${lesson.duration ? `<span>${escapeHtml(lesson.duration)}</span>` : ""}
+                    ${lesson.status ? `<span>${escapeHtml(lesson.status)}</span>` : ""}
+                    ${lesson.materialUrl ? `<a href="${escapeHtml(lesson.materialUrl)}" target="_blank" rel="noopener">자료 보기</a>` : ""}
+                  </div>
+                  ${embedUrl ? `<iframe class="player" src="${embedUrl}" title="${escapeHtml(lesson.title || "YouTube video")}" allowfullscreen></iframe>` : `<div class="no-video">아직 유튜브 링크가 입력되지 않았습니다.</div>`}
+                </article>
+              `;
+            }).join("")}
+          </section>
+        `).join("")}
+      </div>
+      <aside class="side">
+        <h2>강의 정보</h2>
+        <ul>
+          <li>카테고리: ${escapeHtml(course.category || "-")}</li>
+          <li>난이도: ${escapeHtml(course.level || "-")}</li>
+          <li>프로젝트 유형: ${escapeHtml(course.projectType || "-")}</li>
+        </ul>
+        ${stack.length ? `<h2 style="margin-top:18px">기술 스택</h2><div>${stack.map(item => `<span class="tag" style="background:#e8f3f0;color:#166f63;margin:0 5px 6px 0">${escapeHtml(item)}</span>`).join("")}</div>` : ""}
+      </aside>
+    </div>
+  </main>
+</body>
+</html>`;
+    }
+
+    function exportCoursePage() {
+      const course = selectedCourse();
+      const filename = `${slugify(course.pageSlug || course.title)}.html`;
+      const blob = new Blob([coursePageHtml(course)], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`${filename} 파일을 생성했습니다.`);
+    }
+
     function importJson(file) {
       const reader = new FileReader();
       reader.onload = () => {
@@ -848,6 +1019,7 @@
     els.addCourseBtn.addEventListener("click", addCourse);
     els.addSectionBtn.addEventListener("click", addSection);
     els.exportBtn.addEventListener("click", exportJson);
+    els.exportCoursePageBtn.addEventListener("click", exportCoursePage);
     els.importBtn.addEventListener("click", () => els.fileInput.click());
     els.fileInput.addEventListener("change", event => {
       const file = event.target.files[0];
