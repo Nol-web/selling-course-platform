@@ -3,24 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>커리큘럼 빌더</title>
+  <title>Global Seller Hub Builder</title>
   <style>
     :root {
-      --bg: #f6f7f9;
+      --bg: #f4f4f5;
       --panel: #ffffff;
-      --ink: #171a1f;
-      --muted: #626a78;
-      --line: #dfe3ea;
-      --soft: #eef2f6;
-      --accent: #166f63;
-      --accent-2: #b94d28;
-      --focus: #2f80ed;
-      --danger: #bf2d2d;
-      --shadow: 0 10px 28px rgba(31, 38, 50, 0.08);
+      --ink: #0f1115;
+      --muted: #6e737b;
+      --line: #e8e8ea;
+      --field: #fdfdfd;
+      --soft: #f7f7f8;
+      --blue: #3b6eea;
+      --amber: #b77912;
+      --green: #16823a;
+      --gray: #9ca0a6;
+      --chip-warn-bg: #fbf0df;
+      --chip-warn: #b86d0c;
+      --radius: 10px;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -28,587 +33,689 @@
       color: var(--ink);
     }
 
-    button, input, textarea, select {
+    button,
+    input,
+    textarea,
+    select {
       font: inherit;
     }
 
     button {
-      border: 1px solid var(--line);
-      background: var(--panel);
-      color: var(--ink);
-      border-radius: 7px;
-      min-height: 36px;
-      padding: 0 12px;
+      border: 0;
+      background: transparent;
+      color: inherit;
       cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .shell {
+      width: min(1050px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 26px 0 42px;
+    }
+
+    .top-link {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      gap: 7px;
-      white-space: nowrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 14px;
     }
 
-    button:hover { border-color: #aeb7c4; }
-    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-      outline: 2px solid var(--focus);
-      outline-offset: 1px;
+    .board {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 12px 32px rgba(14, 18, 24, 0.05);
     }
 
-    .primary {
-      border-color: var(--accent);
-      background: var(--accent);
-      color: #fff;
-    }
-
-    .danger {
-      border-color: #f0c7c7;
-      color: var(--danger);
-    }
-
-    .icon-btn {
-      width: 36px;
-      padding: 0;
-      flex: 0 0 36px;
-    }
-
-    .app {
-      min-height: 100vh;
+    .summary {
+      padding: 28px 30px 30px;
       display: grid;
-      grid-template-columns: 290px minmax(0, 1fr) 360px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+      border-bottom: 1px solid var(--line);
     }
 
-    aside, main {
-      min-width: 0;
-    }
-
-    .sidebar {
-      background: #20252d;
-      color: #f7f9fb;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .brand {
+    .title-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
     }
 
-    .brand h1 {
-      margin: 0;
-      font-size: 21px;
-      line-height: 1.2;
-      letter-spacing: 0;
-    }
-
-    .sidebar button {
-      border-color: rgba(255,255,255,.18);
-      background: rgba(255,255,255,.08);
-      color: #fff;
-    }
-
-    .course-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow: auto;
-      padding-right: 2px;
-    }
-
-    .course-tab {
-      border: 1px solid rgba(255,255,255,.12);
+    .course-title {
+      border: 0;
+      padding: 0;
+      min-width: min(520px, 100%);
       background: transparent;
-      color: #dce3ea;
-      width: 100%;
-      min-height: 54px;
-      padding: 10px;
-      text-align: left;
-      justify-content: flex-start;
-      display: block;
-    }
-
-    .course-tab.active {
-      background: #ffffff;
-      border-color: #ffffff;
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: 0;
       color: var(--ink);
     }
 
-    .course-tab strong, .course-tab span {
-      display: block;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .course-title:focus,
+    .chapter-title:focus,
+    .lesson-title:focus {
+      outline: 2px solid #d7e2ff;
+      outline-offset: 4px;
+      border-radius: 6px;
+    }
+
+    .summary-text {
+      font-size: 20px;
+      line-height: 1.35;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .status-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       white-space: nowrap;
     }
 
-    .course-tab strong {
-      font-size: 14px;
-      margin-bottom: 3px;
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gray);
     }
 
-    .course-tab span {
-      font-size: 12px;
-      color: inherit;
-      opacity: .72;
+    .dot.blue {
+      background: var(--blue);
     }
 
-    .workspace {
-      padding: 20px;
-      overflow: auto;
+    .dot.amber {
+      background: var(--amber);
     }
 
-    .topbar {
+    .dot.green {
+      background: var(--green);
+    }
+
+    .toolbar {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-
-    .topbar h2 {
-      margin: 0;
-      font-size: 24px;
-      line-height: 1.25;
-      letter-spacing: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .actions {
-      display: flex;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
       justify-content: flex-end;
     }
 
-    .course-meta {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      padding: 16px;
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 18px;
+    .action {
+      min-height: 48px;
+      border-radius: 9px;
+      background: var(--soft);
+      padding: 0 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
-    label {
+    .action.dark {
+      background: #16191f;
+      color: #fff;
+    }
+
+    .plus {
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 400;
+    }
+
+    .body {
+      padding: 30px;
+    }
+
+    .course-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .field {
       display: grid;
       gap: 6px;
       color: var(--muted);
       font-size: 12px;
-      min-width: 0;
+      font-weight: 700;
     }
 
-    input, textarea, select {
-      width: 100%;
+    .field input,
+    .field textarea,
+    .field select {
+      min-height: 40px;
       border: 1px solid var(--line);
       border-radius: 7px;
-      background: #fff;
-      color: var(--ink);
-      min-height: 38px;
       padding: 8px 10px;
+      background: var(--field);
+      color: var(--ink);
     }
 
-    textarea {
-      min-height: 74px;
+    .field textarea {
+      min-height: 76px;
       resize: vertical;
     }
 
-    .wide { grid-column: span 2; }
-    .full { grid-column: 1 / -1; }
+    .wide {
+      grid-column: span 2;
+    }
 
-    .sections {
-      display: flex;
-      flex-direction: column;
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .chapter-list {
+      display: grid;
+      gap: 22px;
+    }
+
+    .chapter {
+      border-top: 1px solid #f0f0f1;
+      padding-top: 30px;
+    }
+
+    .chapter:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .chapter-row {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr) 72px 38px;
       gap: 14px;
+      align-items: center;
     }
 
-    .section {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
+    .drag {
+      color: #7a7f87;
+      font-size: 25px;
+      line-height: 1;
+      display: flex;
+      justify-content: center;
     }
 
-    .section-head {
+    .chapter-title-wrap {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 12px;
-      align-items: start;
-      padding: 14px;
-      border-bottom: 1px solid var(--line);
-      background: #fbfcfd;
-    }
-
-    .section-title {
-      display: grid;
-      grid-template-columns: 46px minmax(0, 1fr);
-      gap: 10px;
       align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      min-height: 48px;
+      background: #fff;
+      padding: 0 11px;
     }
 
-    .section-index {
+    .chapter-title {
+      border: 0;
+      min-width: 0;
+      padding: 0;
+      height: 42px;
+      background: transparent;
+      font-size: 17px;
+      color: var(--ink);
+    }
+
+    .chapter-progress {
+      color: #555b65;
+      font-size: 17px;
+      white-space: nowrap;
+    }
+
+    .menu {
+      width: 38px;
       height: 38px;
-      border-radius: 7px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      color: #12151b;
+      font-size: 24px;
+      letter-spacing: 1px;
+    }
+
+    .menu:hover,
+    .mini:hover {
       background: var(--soft);
+    }
+
+    .cover-row {
+      margin: 40px 0 34px 86px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: var(--accent);
+      gap: 12px;
     }
 
-    .section-tools {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .lesson-list {
+    .cover {
+      width: 68px;
+      height: 58px;
+      border-radius: 4px;
+      border: 2px solid #f0f0f0;
       display: grid;
-      gap: 10px;
-      padding: 14px;
+      place-items: center;
+      position: relative;
+      color: #d7d9de;
+      background:
+        linear-gradient(135deg, transparent 52%, #e7e9ed 53% 68%, transparent 69%),
+        linear-gradient(45deg, transparent 54%, #eceef2 55% 71%, transparent 72%),
+        #fff;
+    }
+
+    .cover-plus {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #1b1f25;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 25px;
+      line-height: 1;
+      margin-left: -24px;
+      margin-top: 40px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    }
+
+    .lessons {
+      display: grid;
+      gap: 26px;
+      margin-left: 72px;
     }
 
     .lesson {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      padding: 12px;
       display: grid;
-      grid-template-columns: 34px minmax(0, 1fr) 88px 116px 86px;
-      gap: 10px;
-      align-items: start;
-    }
-
-    .lesson-num {
-      width: 34px;
-      height: 34px;
-      border-radius: 7px;
-      background: #f2f5f7;
-      display: flex;
+      grid-template-columns: 26px minmax(0, 1fr) auto 42px;
+      gap: 12px;
       align-items: center;
-      justify-content: center;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
     }
 
-    .lesson-fields {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 10px;
-    }
-
-    .lesson-title-row {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 10px;
-    }
-
-    .lesson-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      justify-content: flex-end;
-    }
-
-    .preview {
-      border-left: 1px solid var(--line);
-      background: #ffffff;
-      padding: 18px;
-      overflow: auto;
-    }
-
-    .preview h2 {
-      margin: 0 0 6px;
-      font-size: 22px;
-      line-height: 1.25;
-      letter-spacing: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin: 14px 0;
-    }
-
-    .stat {
-      background: var(--soft);
-      border-radius: 8px;
-      padding: 10px;
+    .lesson-main {
       min-width: 0;
     }
 
-    .stat strong {
-      display: block;
-      font-size: 18px;
+    .lesson-title-line {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+      margin-bottom: 7px;
     }
 
-    .stat span {
-      display: block;
-      color: var(--muted);
+    .lesson-index {
+      font-size: 17px;
+      color: #12151b;
+      white-space: nowrap;
+    }
+
+    .lesson-title {
+      border: 0;
+      padding: 0;
+      min-width: 0;
+      width: 100%;
+      background: transparent;
+      font-size: 17px;
+      color: var(--ink);
+    }
+
+    .lesson-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .meta-chip {
+      min-height: 22px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 4px;
+      background: #f1f2f3;
+      color: #0e1116;
+      padding: 0 7px;
       font-size: 12px;
-      margin-top: 2px;
+      line-height: 1;
     }
 
-    .outline {
-      border-top: 1px solid var(--line);
-      margin-top: 14px;
-      padding-top: 14px;
+    .meta-input {
+      width: 62px;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      font-size: 12px;
+      color: #0e1116;
     }
 
-    .outline-section {
-      margin-bottom: 16px;
-    }
-
-    .outline-section h3 {
-      margin: 0 0 8px;
-      font-size: 15px;
-      letter-spacing: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .outline ol {
-      margin: 0;
-      padding-left: 22px;
+    .url-input {
+      width: min(420px, 100%);
+      border: 0;
+      background: #f1f2f3;
+      border-radius: 4px;
+      min-height: 22px;
+      padding: 0 7px;
+      font-size: 12px;
       color: #333943;
     }
 
-    .outline li {
-      margin: 6px 0;
-      overflow-wrap: anywhere;
+    .status-select {
+      min-height: 38px;
+      border: 0;
+      border-radius: 999px;
+      padding: 0 12px;
+      background: var(--chip-warn-bg);
+      color: var(--chip-warn);
+      font-weight: 800;
+      appearance: none;
+      text-align: center;
     }
 
-    .badge {
+    .status-select.done {
+      background: #e8f4ec;
+      color: var(--green);
+    }
+
+    .status-select.review {
+      background: #eef3ff;
+      color: var(--blue);
+    }
+
+    .status-select.wait {
+      background: #f2f2f3;
+      color: #6b7078;
+    }
+
+    .mini {
+      width: 42px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--soft);
+      display: grid;
+      place-items: center;
+      font-size: 21px;
+    }
+
+    .add-lesson {
+      margin: 4px 0 0 38px;
+      min-height: 36px;
+      border-radius: 8px;
+      background: #f7f7f8;
+      padding: 0 12px;
+      color: #22262d;
+      font-weight: 800;
       display: inline-flex;
       align-items: center;
-      border-radius: 999px;
-      background: #e8f3f0;
-      color: var(--accent);
-      padding: 3px 8px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-right: 5px;
-      margin-bottom: 5px;
+      gap: 7px;
+    }
+
+    .empty {
+      margin-left: 72px;
+      color: var(--muted);
+      border: 1px dashed #d6d8dc;
+      border-radius: 9px;
+      padding: 18px;
+      background: #fcfcfd;
+    }
+
+    .footer-tools {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      flex-wrap: wrap;
+    }
+
+    .file-input {
+      display: none;
     }
 
     .toast {
       position: fixed;
       left: 50%;
-      bottom: 20px;
+      bottom: 22px;
       transform: translateX(-50%);
-      background: #171a1f;
+      background: #11151b;
       color: #fff;
-      border-radius: 8px;
       padding: 10px 14px;
-      box-shadow: var(--shadow);
+      border-radius: 9px;
       opacity: 0;
       pointer-events: none;
       transition: opacity .18s ease;
-      z-index: 5;
     }
 
-    .toast.show { opacity: 1; }
-
-    .help-text {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.45;
+    .toast.show {
+      opacity: 1;
     }
 
-    .empty {
-      border: 1px dashed #c2c9d3;
-      border-radius: 8px;
-      padding: 24px;
-      text-align: center;
-      color: var(--muted);
-      background: #fff;
+    @media (max-width: 820px) {
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        justify-content: flex-start;
+      }
+
+      .course-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .wide,
+      .full {
+        grid-column: auto;
+      }
+
+      .chapter-row {
+        grid-template-columns: 28px minmax(0, 1fr) 54px 36px;
+        gap: 8px;
+      }
+
+      .cover-row,
+      .lessons,
+      .empty {
+        margin-left: 38px;
+      }
+
+      .lesson {
+        grid-template-columns: 24px minmax(0, 1fr);
+      }
+
+      .status-select,
+      .mini {
+        grid-column: 2;
+        justify-self: start;
+      }
     }
 
-    @media (max-width: 1180px) {
-      .app { grid-template-columns: 260px minmax(0, 1fr); }
-      .preview { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); }
-      .lesson { grid-template-columns: 34px minmax(0, 1fr); }
-      .lesson-actions { justify-content: flex-start; }
-    }
+    @media (max-width: 560px) {
+      .shell {
+        width: 100%;
+        padding-top: 0;
+      }
 
-    @media (max-width: 760px) {
-      .app { display: block; }
-      .sidebar { min-height: auto; }
-      .course-meta { grid-template-columns: 1fr; }
-      .wide, .full { grid-column: auto; }
-      .topbar { align-items: stretch; flex-direction: column; }
-      .actions { justify-content: flex-start; }
-      .section-head { grid-template-columns: 1fr; }
-      .section-tools { justify-content: flex-start; }
-      .section-title { grid-template-columns: 40px minmax(0, 1fr); }
-      .lesson-fields, .lesson-title-row { grid-template-columns: 1fr; }
-      .stats { grid-template-columns: 1fr; }
+      .board {
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+      }
+
+      .summary,
+      .body {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .status-line {
+        gap: 10px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <div class="brand">
-        <h1>커리큘럼 빌더</h1>
-        <button class="icon-btn" id="addCourseBtn" title="강의 추가">+</button>
-      </div>
-      <div class="course-list" id="courseList"></div>
-    </aside>
-
-    <main class="workspace">
-      <div class="topbar">
-        <h2 id="editorTitle">강의 편집</h2>
-        <div class="actions">
-          <button id="importBtn" title="JSON 불러오기">불러오기</button>
-          <button id="exportBtn" title="JSON 내보내기">내보내기</button>
-          <button id="exportCoursePageBtn" title="현재 강의 페이지 생성">강의 페이지 생성</button>
-          <button id="addSectionBtn" class="primary" title="섹션 추가">섹션 추가</button>
+  <div class="shell">
+    <a class="top-link" href="index.html">← 공개 사이트로 돌아가기</a>
+    <main class="board">
+      <header class="summary">
+        <div>
+          <div class="title-row">
+            <input class="course-title" id="courseTitle" aria-label="코스명">
+          </div>
+          <div class="summary-text" id="summaryText"></div>
+          <div class="status-line" id="statusLine"></div>
         </div>
-      </div>
+        <div class="toolbar">
+          <button class="action" id="addChapterBtn"><span class="plus">+</span> 챕터 추가</button>
+          <button class="action dark" id="exportPageBtn">강의 페이지 생성</button>
+        </div>
+      </header>
 
-      <section class="course-meta" id="courseMeta"></section>
-      <section class="sections" id="sections"></section>
+      <section class="body">
+        <div class="course-fields">
+          <label class="field">카테고리
+            <input id="categoryInput">
+          </label>
+          <label class="field">난이도
+            <select id="levelInput">
+              <option>입문</option>
+              <option>초급</option>
+              <option>중급</option>
+              <option>고급</option>
+            </select>
+          </label>
+          <label class="field">페이지 파일명
+            <input id="slugInput" placeholder="global-selling-start">
+          </label>
+          <label class="field wide">기술/주제 태그
+            <input id="tagsInput" placeholder="마켓플레이스, 소싱, 물류">
+          </label>
+          <label class="field">예상 시간
+            <input id="hoursInput" type="number" min="0" step="0.5">
+          </label>
+          <label class="field full">코스 설명
+            <textarea id="descriptionInput"></textarea>
+          </label>
+        </div>
+
+        <div class="chapter-list" id="chapterList"></div>
+
+        <div class="footer-tools">
+          <button class="action" id="importBtn">불러오기</button>
+          <button class="action" id="exportJsonBtn">JSON 내보내기</button>
+        </div>
+      </section>
     </main>
-
-    <aside class="preview">
-      <h2 id="previewTitle"></h2>
-      <div id="previewTags"></div>
-      <div class="stats" id="stats"></div>
-      <p id="previewDescription"></p>
-      <div class="outline" id="outline"></div>
-    </aside>
   </div>
 
-  <input id="fileInput" type="file" accept="application/json,.json" hidden>
+  <input class="file-input" id="fileInput" type="file" accept="application/json,.json">
   <div class="toast" id="toast"></div>
 
   <script>
-    const storageKey = "youtube-curriculum-builder-v1";
+    const storageKey = "global-seller-hub-builder-v2";
 
-    const sampleData = {
-      selectedCourseId: "course-1",
-      courses: [
-        {
-          id: "course-1",
-          title: "새 프로젝트 강의",
-          category: "웹 개발",
-          level: "입문",
-          projectType: "프로젝트 실습",
-          pageSlug: "sample-course",
-          techStack: "HTML, CSS, JavaScript",
-          estimatedHours: 4,
-          description: "유튜브 영상을 직접 연결해 하나의 강의 커리큘럼으로 구성합니다.",
-          sections: [
-            {
-              id: "section-1",
-              title: "시작하기",
-              goal: "프로젝트 목표와 개발 환경을 정리합니다.",
-              lessons: [
-                {
-                  id: "lesson-1",
-                  title: "강의 소개",
-                  youtubeUrl: "",
-                  duration: "10:00",
-                  materialUrl: "",
-                  status: "초안"
-                }
-              ]
-            }
-          ]
-        }
-      ]
+    const state = {
+      course: loadCourse()
     };
 
-    let state = loadState();
-
     const els = {
-      addCourseBtn: document.getElementById("addCourseBtn"),
-      courseList: document.getElementById("courseList"),
-      editorTitle: document.getElementById("editorTitle"),
-      courseMeta: document.getElementById("courseMeta"),
-      sections: document.getElementById("sections"),
-      addSectionBtn: document.getElementById("addSectionBtn"),
-      exportBtn: document.getElementById("exportBtn"),
-      exportCoursePageBtn: document.getElementById("exportCoursePageBtn"),
+      courseTitle: document.getElementById("courseTitle"),
+      summaryText: document.getElementById("summaryText"),
+      statusLine: document.getElementById("statusLine"),
+      addChapterBtn: document.getElementById("addChapterBtn"),
+      exportPageBtn: document.getElementById("exportPageBtn"),
+      categoryInput: document.getElementById("categoryInput"),
+      levelInput: document.getElementById("levelInput"),
+      slugInput: document.getElementById("slugInput"),
+      tagsInput: document.getElementById("tagsInput"),
+      hoursInput: document.getElementById("hoursInput"),
+      descriptionInput: document.getElementById("descriptionInput"),
+      chapterList: document.getElementById("chapterList"),
       importBtn: document.getElementById("importBtn"),
+      exportJsonBtn: document.getElementById("exportJsonBtn"),
       fileInput: document.getElementById("fileInput"),
-      previewTitle: document.getElementById("previewTitle"),
-      previewTags: document.getElementById("previewTags"),
-      previewDescription: document.getElementById("previewDescription"),
-      stats: document.getElementById("stats"),
-      outline: document.getElementById("outline"),
       toast: document.getElementById("toast")
     };
 
-    function uid(prefix) {
-      return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    function sampleCourse() {
+      return {
+        title: "글로벌 셀링 시작하기",
+        category: "글로벌 셀링",
+        level: "입문",
+        slug: "global-selling-start",
+        tags: "마켓플레이스, 소싱, 물류",
+        hours: 2.4,
+        description: "해외 판매를 처음 시작하는 셀러를 위해 준비사항, 가입 절차, 상품 리스팅, 운영 흐름을 정리한 코스입니다.",
+        chapters: [
+          {
+            id: uid("chapter"),
+            title: "Chapter1. 라자다 시작 전 준비사항",
+            complete: 23,
+            total: 40,
+            lessons: [
+              {
+                id: uid("lesson"),
+                title: "지금 라자다에 주목해야 되는 이유",
+                duration: "10:29",
+                status: "개선 필요",
+                youtubeUrl: "",
+                materialUrl: ""
+              },
+              {
+                id: uid("lesson"),
+                title: "첫릿길도 한 걸음부터, 라자다 가입 절차",
+                duration: "04:25",
+                status: "개선 필요",
+                youtubeUrl: "",
+                materialUrl: ""
+              }
+            ]
+          }
+        ]
+      };
     }
 
-    function loadState() {
+    function uid(prefix) {
+      return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    }
+
+    function loadCourse() {
       try {
         const saved = localStorage.getItem(storageKey);
-        return saved ? JSON.parse(saved) : structuredClone(sampleData);
+        return saved ? JSON.parse(saved) : sampleCourse();
       } catch {
-        return structuredClone(sampleData);
+        return sampleCourse();
       }
     }
 
-    function saveState() {
-      localStorage.setItem(storageKey, JSON.stringify(state));
-    }
-
-    function selectedCourse() {
-      return state.courses.find(course => course.id === state.selectedCourseId) || state.courses[0];
-    }
-
-    function setCourseValue(field, value) {
-      const course = selectedCourse();
-      course[field] = field === "estimatedHours" ? Number(value || 0) : value;
-      saveAndRefresh();
-    }
-
-    function setSectionValue(sectionId, field, value) {
-      const section = selectedCourse().sections.find(item => item.id === sectionId);
-      section[field] = value;
-      saveAndRefresh();
-    }
-
-    function setLessonValue(sectionId, lessonId, field, value) {
-      const section = selectedCourse().sections.find(item => item.id === sectionId);
-      const lesson = section.lessons.find(item => item.id === lessonId);
-      lesson[field] = value;
-      saveAndRefresh();
+    function save() {
+      localStorage.setItem(storageKey, JSON.stringify(state.course));
     }
 
     function saveAndRender() {
-      saveState();
+      save();
       render();
-    }
-
-    function saveAndRefresh() {
-      const course = selectedCourse();
-      saveState();
-      els.editorTitle.textContent = course.title || "제목 없는 강의";
-      renderCourseList(course);
-      renderPreview(course);
-    }
-
-    function showToast(message) {
-      els.toast.textContent = message;
-      els.toast.classList.add("show");
-      window.clearTimeout(showToast.timer);
-      showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1800);
     }
 
     function escapeHtml(value) {
@@ -620,237 +727,194 @@
         .replaceAll("'", "&#039;");
     }
 
-    function render() {
-      if (!state.courses.length) {
-        state = structuredClone(sampleData);
-        saveState();
-      }
-      const course = selectedCourse();
-      state.selectedCourseId = course.id;
-      renderCourseList(course);
-      renderCourseMeta(course);
-      renderSections(course);
-      renderPreview(course);
-    }
-
-    function renderCourseList(activeCourse) {
-      els.courseList.innerHTML = state.courses.map(course => {
-        const lessonCount = course.sections.reduce((sum, section) => sum + section.lessons.length, 0);
-        return `
-          <button class="course-tab ${course.id === activeCourse.id ? "active" : ""}" data-course-id="${course.id}">
-            <strong>${escapeHtml(course.title || "제목 없는 강의")}</strong>
-            <span>${escapeHtml(course.category || "카테고리 없음")} · ${lessonCount}개 영상</span>
-          </button>
-        `;
-      }).join("");
-    }
-
-    function renderCourseMeta(course) {
-      els.editorTitle.textContent = course.title || "제목 없는 강의";
-      els.courseMeta.innerHTML = `
-        <label class="wide">강의명
-          <input value="${escapeHtml(course.title)}" data-course-field="title">
-        </label>
-        <label>카테고리
-          <input value="${escapeHtml(course.category)}" data-course-field="category">
-        </label>
-        <label>난이도
-          <select data-course-field="level">
-            ${["입문", "초급", "중급", "고급"].map(level => `<option ${course.level === level ? "selected" : ""}>${level}</option>`).join("")}
-          </select>
-        </label>
-        <label>프로젝트 유형
-          <input value="${escapeHtml(course.projectType)}" data-course-field="projectType">
-        </label>
-        <label>페이지 파일명
-          <input value="${escapeHtml(course.pageSlug || slugify(course.title))}" placeholder="a-course" data-course-field="pageSlug">
-        </label>
-        <label>예상 시간
-          <input type="number" min="0" step="0.5" value="${escapeHtml(course.estimatedHours)}" data-course-field="estimatedHours">
-        </label>
-        <label class="wide">기술 스택
-          <input value="${escapeHtml(course.techStack)}" data-course-field="techStack">
-          <p class="help-text">예: a-course 라고 쓰면 a-course.html 파일로 생성됩니다.</p>
-        </label>
-        <label class="full">강의 설명
-          <textarea data-course-field="description">${escapeHtml(course.description)}</textarea>
-        </label>
-      `;
-    }
-
-    function renderSections(course) {
-      if (!course.sections.length) {
-        els.sections.innerHTML = `<div class="empty">아직 섹션이 없습니다.</div>`;
-        return;
-      }
-
-      els.sections.innerHTML = course.sections.map((section, sectionIndex) => `
-        <article class="section" data-section-id="${section.id}">
-          <div class="section-head">
-            <div class="section-title">
-              <div class="section-index">${sectionIndex + 1}</div>
-              <div>
-                <label>섹션명
-                  <input value="${escapeHtml(section.title)}" data-section-field="title">
-                </label>
-              </div>
-            </div>
-            <div class="section-tools">
-              <button class="icon-btn" data-action="move-section-up" title="섹션 위로">↑</button>
-              <button class="icon-btn" data-action="move-section-down" title="섹션 아래로">↓</button>
-              <button data-action="add-lesson" title="영상 레슨 추가">영상 추가</button>
-              <button class="danger icon-btn" data-action="delete-section" title="섹션 삭제">×</button>
-            </div>
-            <label class="full">섹션 목표
-              <textarea data-section-field="goal">${escapeHtml(section.goal)}</textarea>
-            </label>
-          </div>
-          <div class="lesson-list">
-            ${section.lessons.length ? section.lessons.map((lesson, lessonIndex) => renderLesson(section.id, lesson, lessonIndex)).join("") : `<div class="empty">영상 레슨을 추가하세요.</div>`}
-          </div>
-        </article>
-      `).join("");
-    }
-
-    function renderLesson(sectionId, lesson, lessonIndex) {
-      return `
-        <div class="lesson" data-lesson-id="${lesson.id}">
-          <div class="lesson-num">${lessonIndex + 1}</div>
-          <div class="lesson-fields">
-            <div class="lesson-title-row">
-              <label>영상 제목
-                <input value="${escapeHtml(lesson.title)}" data-lesson-field="title">
-              </label>
-              <label>유튜브 링크
-                <input value="${escapeHtml(lesson.youtubeUrl)}" placeholder="https://youtube.com/..." data-lesson-field="youtubeUrl">
-              </label>
-            </div>
-            <label>자료 링크
-              <input value="${escapeHtml(lesson.materialUrl)}" data-lesson-field="materialUrl">
-            </label>
-            <label>상태
-              <select data-lesson-field="status">
-                ${["초안", "촬영 완료", "편집 완료", "공개"].map(status => `<option ${lesson.status === status ? "selected" : ""}>${status}</option>`).join("")}
-              </select>
-            </label>
-          </div>
-          <label>길이
-            <input value="${escapeHtml(lesson.duration)}" placeholder="12:30" data-lesson-field="duration">
-          </label>
-          <div class="lesson-actions">
-            <button class="icon-btn" data-section-id="${sectionId}" data-action="move-lesson-up" title="영상 위로">↑</button>
-            <button class="icon-btn" data-section-id="${sectionId}" data-action="move-lesson-down" title="영상 아래로">↓</button>
-            <button class="danger icon-btn" data-section-id="${sectionId}" data-action="delete-lesson" title="영상 삭제">×</button>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderPreview(course) {
-      const lessons = course.sections.flatMap(section => section.lessons);
-      const publicLessons = lessons.filter(lesson => lesson.status === "공개").length;
-      els.previewTitle.textContent = course.title || "제목 없는 강의";
-      els.previewTags.innerHTML = [course.category, course.level, course.projectType]
-        .filter(Boolean)
-        .map(tag => `<span class="badge">${escapeHtml(tag)}</span>`)
-        .join("");
-      els.stats.innerHTML = `
-        <div class="stat"><strong>${course.sections.length}</strong><span>섹션</span></div>
-        <div class="stat"><strong>${lessons.length}</strong><span>영상</span></div>
-        <div class="stat"><strong>${publicLessons}</strong><span>공개</span></div>
-      `;
-      els.previewDescription.textContent = course.description || "";
-      els.outline.innerHTML = course.sections.map((section, index) => `
-        <div class="outline-section">
-          <h3>${index + 1}. ${escapeHtml(section.title || "제목 없는 섹션")}</h3>
-          <ol>
-            ${section.lessons.map(lesson => `<li>${escapeHtml(lesson.title || "제목 없는 영상")} ${lesson.duration ? `<span class="badge">${escapeHtml(lesson.duration)}</span>` : ""}</li>`).join("")}
-          </ol>
-        </div>
-      `).join("");
-    }
-
-    function addCourse() {
-      const course = {
-        id: uid("course"),
-        title: "새 강의",
-        category: "",
-        level: "입문",
-        projectType: "",
-        pageSlug: "",
-        techStack: "",
-        estimatedHours: 0,
-        description: "",
-        sections: []
-      };
-      state.courses.push(course);
-      state.selectedCourseId = course.id;
-      saveAndRender();
-    }
-
-    function addSection() {
-      selectedCourse().sections.push({
-        id: uid("section"),
-        title: "새 섹션",
-        goal: "",
-        lessons: []
-      });
-      saveAndRender();
-    }
-
-    function addLesson(sectionId) {
-      const section = selectedCourse().sections.find(item => item.id === sectionId);
-      section.lessons.push({
-        id: uid("lesson"),
-        title: "새 영상",
-        youtubeUrl: "",
-        duration: "",
-        materialUrl: "",
-        status: "초안"
-      });
-      saveAndRender();
-    }
-
-    function moveItem(list, id, direction) {
-      const index = list.findIndex(item => item.id === id);
-      const nextIndex = index + direction;
-      if (index < 0 || nextIndex < 0 || nextIndex >= list.length) return;
-      const [item] = list.splice(index, 1);
-      list.splice(nextIndex, 0, item);
-      saveAndRender();
-    }
-
-    function deleteSection(sectionId) {
-      const course = selectedCourse();
-      course.sections = course.sections.filter(section => section.id !== sectionId);
-      saveAndRender();
-    }
-
-    function deleteLesson(sectionId, lessonId) {
-      const section = selectedCourse().sections.find(item => item.id === sectionId);
-      section.lessons = section.lessons.filter(lesson => lesson.id !== lessonId);
-      saveAndRender();
-    }
-
-    function exportJson() {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "curriculum.json";
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast("JSON 파일을 내보냈습니다.");
-    }
-
     function slugify(value) {
-      const fallback = "course-page";
       const slug = String(value || "")
         .trim()
         .toLowerCase()
         .replace(/[^a-z0-9가-힣]+/g, "-")
         .replace(/^-+|-+$/g, "");
-      return slug || fallback;
+      return slug || "course-page";
+    }
+
+    function allLessons() {
+      return state.course.chapters.flatMap(chapter => chapter.lessons);
+    }
+
+    function statusCounts() {
+      const counts = { "검토 대기": 0, "검토 중": 0, "개선 필요": 0, "승인": 0 };
+      allLessons().forEach((lesson) => {
+        counts[lesson.status] = (counts[lesson.status] || 0) + 1;
+      });
+      return counts;
+    }
+
+    function totalMinutes() {
+      return allLessons().reduce((sum, lesson) => {
+        const parts = String(lesson.duration || "0").split(":").map(Number);
+        if (parts.length === 2) return sum + (parts[0] || 0) + (parts[1] || 0) / 60;
+        if (parts.length === 3) return sum + (parts[0] || 0) * 60 + (parts[1] || 0) + (parts[2] || 0) / 60;
+        return sum;
+      }, 0);
+    }
+
+    function formatDuration(minutes) {
+      const rounded = Math.round(minutes);
+      const hours = Math.floor(rounded / 60);
+      const mins = rounded % 60;
+      if (!hours) return `${mins}분`;
+      return `${hours}시간 ${mins}분`;
+    }
+
+    function syncFields() {
+      els.courseTitle.value = state.course.title;
+      els.categoryInput.value = state.course.category;
+      els.levelInput.value = state.course.level;
+      els.slugInput.value = state.course.slug;
+      els.tagsInput.value = state.course.tags;
+      els.hoursInput.value = state.course.hours;
+      els.descriptionInput.value = state.course.description;
+    }
+
+    function render() {
+      syncFields();
+      renderSummary();
+      els.chapterList.innerHTML = state.course.chapters.length
+        ? state.course.chapters.map(renderChapter).join("")
+        : `<div class="empty">챕터를 추가하세요.</div>`;
+    }
+
+    function renderSummary() {
+      const lessons = allLessons();
+      const counts = statusCounts();
+      els.summaryText.textContent = `챕터${state.course.chapters.length}개 · 강의${lessons.length}개 · 총 ${formatDuration(totalMinutes())}`;
+      els.statusLine.innerHTML = `
+        <span class="status-item"><span class="dot"></span> 검토 대기 ${counts["검토 대기"] || 0}개</span>
+        <span class="status-item"><span class="dot blue"></span> 검토 중 ${counts["검토 중"] || 0}개</span>
+        <span class="status-item"><span class="dot amber"></span> 개선 필요 ${counts["개선 필요"] || 0}개</span>
+        <span class="status-item"><span class="dot green"></span> 승인 ${counts["승인"] || 0}개</span>
+      `;
+    }
+
+    function renderChapter(chapter, chapterIndex) {
+      return `
+        <article class="chapter" data-chapter-id="${chapter.id}">
+          <div class="chapter-row">
+            <div class="drag">≡</div>
+            <div class="chapter-title-wrap">
+              <input class="chapter-title" value="${escapeHtml(chapter.title)}" data-chapter-field="title" aria-label="챕터명">
+              <span class="chapter-progress">${escapeHtml(chapter.complete || 0)}/${escapeHtml(chapter.total || 0)}</span>
+            </div>
+            <button class="menu" data-action="add-lesson" title="강의 추가">+</button>
+            <button class="menu" data-action="delete-chapter" title="챕터 삭제">…</button>
+          </div>
+
+          <div class="cover-row">
+            <div class="cover" aria-hidden="true"></div>
+            <button class="cover-plus" data-action="add-lesson" title="강의 추가">+</button>
+          </div>
+
+          <div class="lessons">
+            ${chapter.lessons.length ? chapter.lessons.map((lesson, lessonIndex) => renderLesson(chapter.id, lesson, chapterIndex, lessonIndex)).join("") : ""}
+          </div>
+          ${chapter.lessons.length ? "" : `<div class="empty">아직 강의가 없습니다.</div>`}
+          <button class="add-lesson" data-action="add-lesson"><span class="plus">+</span> 강의 추가</button>
+        </article>
+      `;
+    }
+
+    function statusClass(status) {
+      if (status === "승인") return "done";
+      if (status === "검토 중") return "review";
+      if (status === "검토 대기") return "wait";
+      return "";
+    }
+
+    function renderLesson(chapterId, lesson, chapterIndex, lessonIndex) {
+      const number = lessonIndex + 1;
+      return `
+        <div class="lesson" data-lesson-id="${lesson.id}">
+          <div class="drag">≡</div>
+          <div class="lesson-main">
+            <div class="lesson-title-line">
+              <span class="lesson-index">${number}.</span>
+              <input class="lesson-title" value="${escapeHtml(lesson.title)}" data-lesson-field="title" aria-label="강의명">
+            </div>
+            <div class="lesson-meta">
+              <span class="meta-chip">▶ <input class="meta-input" value="${escapeHtml(lesson.duration)}" data-lesson-field="duration" aria-label="강의 시간"></span>
+              <span class="meta-chip">▣ 자막</span>
+              <span class="meta-chip">▤ 수업노트</span>
+              <input class="url-input" value="${escapeHtml(lesson.youtubeUrl)}" placeholder="유튜브 링크" data-lesson-field="youtubeUrl" aria-label="유튜브 링크">
+            </div>
+          </div>
+          <select class="status-select ${statusClass(lesson.status)}" data-lesson-field="status" aria-label="상태">
+            ${["검토 대기", "검토 중", "개선 필요", "승인"].map(status => `<option ${lesson.status === status ? "selected" : ""}>${status}</option>`).join("")}
+          </select>
+          <button class="mini" data-action="delete-lesson" data-chapter-id="${chapterId}" title="강의 삭제">…</button>
+        </div>
+      `;
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => els.toast.classList.remove("show"), 1800);
+    }
+
+    function updateCourseField(field, value) {
+      state.course[field] = field === "hours" ? Number(value || 0) : value;
+      save();
+    }
+
+    function addChapter() {
+      state.course.chapters.push({
+        id: uid("chapter"),
+        title: `Chapter${state.course.chapters.length + 1}. 새 챕터`,
+        complete: 0,
+        total: 0,
+        lessons: []
+      });
+      saveAndRender();
+    }
+
+    function addLesson(chapterId) {
+      const chapter = state.course.chapters.find(item => item.id === chapterId);
+      chapter.lessons.push({
+        id: uid("lesson"),
+        title: "새 강의",
+        duration: "00:00",
+        status: "검토 대기",
+        youtubeUrl: "",
+        materialUrl: ""
+      });
+      chapter.total = Math.max(Number(chapter.total || 0), chapter.lessons.length);
+      saveAndRender();
+    }
+
+    function deleteChapter(chapterId) {
+      state.course.chapters = state.course.chapters.filter(chapter => chapter.id !== chapterId);
+      saveAndRender();
+    }
+
+    function deleteLesson(chapterId, lessonId) {
+      const chapter = state.course.chapters.find(item => item.id === chapterId);
+      chapter.lessons = chapter.lessons.filter(lesson => lesson.id !== lessonId);
+      saveAndRender();
+    }
+
+    function setChapterField(chapterId, field, value) {
+      const chapter = state.course.chapters.find(item => item.id === chapterId);
+      chapter[field] = value;
+      save();
+    }
+
+    function setLessonField(chapterId, lessonId, field, value) {
+      const chapter = state.course.chapters.find(item => item.id === chapterId);
+      const lesson = chapter.lessons.find(item => item.id === lessonId);
+      lesson[field] = value;
+      save();
+      if (field === "duration") renderSummary();
+      if (field === "status") render();
     }
 
     function youtubeEmbedUrl(url) {
@@ -859,156 +923,118 @@
       try {
         const parsed = new URL(raw);
         let id = "";
-        if (parsed.hostname.includes("youtu.be")) {
-          id = parsed.pathname.replace("/", "");
-        } else if (parsed.searchParams.get("v")) {
-          id = parsed.searchParams.get("v");
-        } else if (parsed.pathname.includes("/shorts/")) {
-          id = parsed.pathname.split("/shorts/")[1].split("/")[0];
-        } else if (parsed.pathname.includes("/embed/")) {
-          id = parsed.pathname.split("/embed/")[1].split("/")[0];
-        }
+        if (parsed.hostname.includes("youtu.be")) id = parsed.pathname.replace("/", "");
+        if (parsed.searchParams.get("v")) id = parsed.searchParams.get("v");
+        if (parsed.pathname.includes("/shorts/")) id = parsed.pathname.split("/shorts/")[1].split("/")[0];
+        if (parsed.pathname.includes("/embed/")) id = parsed.pathname.split("/embed/")[1].split("/")[0];
         return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}` : "";
       } catch {
         return "";
       }
     }
 
-    function coursePageHtml(course) {
-      const lessons = course.sections.flatMap(section => section.lessons);
-      const tags = [course.category, course.level, course.projectType].filter(Boolean);
-      const stack = String(course.techStack || "")
-        .split(",")
-        .map(item => item.trim())
-        .filter(Boolean);
-
+    function coursePageHtml() {
+      const course = state.course;
+      const lessons = allLessons();
+      const tags = String(course.tags || "").split(",").map(tag => tag.trim()).filter(Boolean);
       return `<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(course.title || "강의 페이지")}</title>
+  <title>${escapeHtml(course.title)}</title>
   <style>
-    :root {
-      --bg: #f7f8fa;
-      --ink: #171a1f;
-      --muted: #626a78;
-      --line: #dfe3ea;
-      --panel: #ffffff;
-      --accent: #166f63;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--ink); }
-    a { color: var(--accent); text-decoration: none; }
-    .hero { background: #20252d; color: white; padding: 42px 20px 34px; }
-    .wrap { width: min(1080px, calc(100% - 32px)); margin: 0 auto; }
-    .hero h1 { margin: 0 0 12px; font-size: clamp(30px, 5vw, 54px); line-height: 1.08; letter-spacing: 0; overflow-wrap: anywhere; }
-    .hero p { max-width: 760px; color: #d6dee8; font-size: 17px; line-height: 1.65; margin: 0; }
-    .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-    .tag { display: inline-flex; align-items: center; border-radius: 999px; background: rgba(255,255,255,.12); color: white; padding: 6px 10px; font-size: 13px; font-weight: 700; }
-    .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0 0; max-width: 620px; }
-    .summary div { border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 12px; background: rgba(255,255,255,.07); }
-    .summary strong { display: block; font-size: 22px; }
-    .summary span { color: #c5ced8; font-size: 13px; }
-    main { padding: 28px 0 50px; }
-    .grid { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 22px; align-items: start; }
-    .section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
-    .section-head { padding: 18px; border-bottom: 1px solid var(--line); background: #fbfcfd; }
-    .section-head h2 { margin: 0 0 6px; font-size: 21px; letter-spacing: 0; overflow-wrap: anywhere; }
-    .section-head p { margin: 0; color: var(--muted); line-height: 1.55; }
-    .lesson { padding: 16px 18px; border-bottom: 1px solid var(--line); }
-    .lesson:last-child { border-bottom: 0; }
-    .lesson h3 { margin: 0 0 10px; font-size: 17px; letter-spacing: 0; overflow-wrap: anywhere; }
-    .lesson-meta { display: flex; gap: 8px; flex-wrap: wrap; color: var(--muted); font-size: 13px; margin-bottom: 12px; }
-    .player { aspect-ratio: 16 / 9; width: 100%; border: 0; border-radius: 8px; background: #111; }
-    .no-video { border: 1px dashed #b8c1cc; border-radius: 8px; padding: 18px; color: var(--muted); background: #f8fafc; }
-    .side { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; position: sticky; top: 18px; }
-    .side h2 { margin: 0 0 12px; font-size: 17px; letter-spacing: 0; }
-    .side ul { margin: 0; padding-left: 18px; color: #333943; line-height: 1.8; }
-    @media (max-width: 820px) {
-      .summary, .grid { grid-template-columns: 1fr; }
-      .side { position: static; }
-    }
+    :root { --ink:#151a21; --muted:#67707b; --line:#e5e8ec; --brand:#11695f; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:#f6f7f8; }
+    .hero { background:#172825; color:#fff; padding:48px 20px 36px; }
+    .wrap { width:min(1060px, calc(100% - 32px)); margin:0 auto; }
+    h1 { margin:0; font-size:clamp(34px, 5vw, 62px); line-height:1.08; letter-spacing:0; }
+    .hero p { color:#d6e3df; max-width:720px; line-height:1.7; font-size:17px; }
+    .tags { display:flex; flex-wrap:wrap; gap:7px; margin:18px 0 0; }
+    .tag { background:#e8f3f0; color:var(--brand); border-radius:999px; padding:6px 10px; font-weight:800; font-size:12px; display:inline-flex; }
+    .stats { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:20px; max-width:560px; }
+    .stats div { border:1px solid rgba(255,255,255,.17); border-radius:8px; padding:12px; background:rgba(255,255,255,.08); }
+    .stats strong { display:block; font-size:24px; }
+    main { padding:28px 0 48px; }
+    .chapter { background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:16px; }
+    .chapter-head { padding:18px; border-bottom:1px solid var(--line); background:#fbfcfc; }
+    .chapter h2 { margin:0; font-size:21px; letter-spacing:0; }
+    .lesson { padding:18px; border-bottom:1px solid var(--line); }
+    .lesson:last-child { border-bottom:0; }
+    .lesson h3 { margin:0 0 10px; font-size:17px; letter-spacing:0; }
+    .meta { color:var(--muted); display:flex; gap:8px; flex-wrap:wrap; font-size:13px; margin-bottom:12px; }
+    iframe { width:100%; aspect-ratio:16/9; border:0; border-radius:8px; background:#111; }
+    .empty { border:1px dashed #cbd0d7; border-radius:8px; padding:16px; color:var(--muted); }
+    @media (max-width:640px) { .stats { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
   <header class="hero">
     <div class="wrap">
-      <div class="tags">${tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
-      <h1>${escapeHtml(course.title || "제목 없는 강의")}</h1>
-      <p>${escapeHtml(course.description || "")}</p>
-      <div class="summary">
-        <div><strong>${course.sections.length}</strong><span>섹션</span></div>
-        <div><strong>${lessons.length}</strong><span>영상</span></div>
-        <div><strong>${escapeHtml(course.estimatedHours || 0)}</strong><span>예상 시간</span></div>
+      <h1>${escapeHtml(course.title)}</h1>
+      <p>${escapeHtml(course.description)}</p>
+      <div class="tags">
+        <span class="tag">${escapeHtml(course.category)}</span>
+        <span class="tag">${escapeHtml(course.level)}</span>
+        ${tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}
+      </div>
+      <div class="stats">
+        <div><strong>${course.chapters.length}</strong><span>챕터</span></div>
+        <div><strong>${lessons.length}</strong><span>강의</span></div>
+        <div><strong>${formatDuration(totalMinutes())}</strong><span>총 학습 시간</span></div>
       </div>
     </div>
   </header>
   <main class="wrap">
-    <div class="grid">
-      <div>
-        ${course.sections.map((section, sectionIndex) => `
-          <section class="section">
-            <div class="section-head">
-              <h2>${sectionIndex + 1}. ${escapeHtml(section.title || "제목 없는 섹션")}</h2>
-              <p>${escapeHtml(section.goal || "")}</p>
-            </div>
-            ${section.lessons.map((lesson, lessonIndex) => {
-              const embedUrl = youtubeEmbedUrl(lesson.youtubeUrl);
-              return `
-                <article class="lesson">
-                  <h3>${sectionIndex + 1}-${lessonIndex + 1}. ${escapeHtml(lesson.title || "제목 없는 영상")}</h3>
-                  <div class="lesson-meta">
-                    ${lesson.duration ? `<span>${escapeHtml(lesson.duration)}</span>` : ""}
-                    ${lesson.status ? `<span>${escapeHtml(lesson.status)}</span>` : ""}
-                    ${lesson.materialUrl ? `<a href="${escapeHtml(lesson.materialUrl)}" target="_blank" rel="noopener">자료 보기</a>` : ""}
-                  </div>
-                  ${embedUrl ? `<iframe class="player" src="${embedUrl}" title="${escapeHtml(lesson.title || "YouTube video")}" allowfullscreen></iframe>` : `<div class="no-video">아직 유튜브 링크가 입력되지 않았습니다.</div>`}
-                </article>
-              `;
-            }).join("")}
-          </section>
-        `).join("")}
-      </div>
-      <aside class="side">
-        <h2>강의 정보</h2>
-        <ul>
-          <li>카테고리: ${escapeHtml(course.category || "-")}</li>
-          <li>난이도: ${escapeHtml(course.level || "-")}</li>
-          <li>프로젝트 유형: ${escapeHtml(course.projectType || "-")}</li>
-        </ul>
-        ${stack.length ? `<h2 style="margin-top:18px">기술 스택</h2><div>${stack.map(item => `<span class="tag" style="background:#e8f3f0;color:#166f63;margin:0 5px 6px 0">${escapeHtml(item)}</span>`).join("")}</div>` : ""}
-      </aside>
-    </div>
+    ${course.chapters.map((chapter, chapterIndex) => `
+      <section class="chapter">
+        <div class="chapter-head"><h2>${chapterIndex + 1}. ${escapeHtml(chapter.title)}</h2></div>
+        ${chapter.lessons.map((lesson, lessonIndex) => {
+          const embed = youtubeEmbedUrl(lesson.youtubeUrl);
+          return `<article class="lesson">
+            <h3>${lessonIndex + 1}. ${escapeHtml(lesson.title)}</h3>
+            <div class="meta"><span>${escapeHtml(lesson.duration)}</span><span>${escapeHtml(lesson.status)}</span></div>
+            ${embed ? `<iframe src="${embed}" title="${escapeHtml(lesson.title)}" allowfullscreen></iframe>` : `<div class="empty">유튜브 링크 입력 전입니다.</div>`}
+          </article>`;
+        }).join("")}
+      </section>
+    `).join("")}
   </main>
 </body>
 </html>`;
     }
 
-    function exportCoursePage() {
-      const course = selectedCourse();
-      const filename = `${slugify(course.pageSlug || course.title)}.html`;
-      const blob = new Blob([coursePageHtml(course)], { type: "text/html" });
+    function download(filename, content, type) {
+      const blob = new Blob([content], { type });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
-      showToast(`${filename} 파일을 생성했습니다.`);
+    }
+
+    function exportPage() {
+      const filename = `${slugify(state.course.slug || state.course.title)}.html`;
+      download(filename, coursePageHtml(), "text/html");
+      showToast(`${filename} 생성 완료`);
+    }
+
+    function exportJson() {
+      download("global-seller-course.json", JSON.stringify(state.course, null, 2), "application/json");
+      showToast("JSON 내보내기 완료");
     }
 
     function importJson(file) {
       const reader = new FileReader();
       reader.onload = () => {
         try {
-          const nextState = JSON.parse(reader.result);
-          if (!Array.isArray(nextState.courses)) throw new Error("Invalid curriculum JSON");
-          state = nextState;
-          if (!state.selectedCourseId && state.courses[0]) state.selectedCourseId = state.courses[0].id;
+          const data = JSON.parse(reader.result);
+          if (!Array.isArray(data.chapters)) throw new Error("Invalid course");
+          state.course = data;
           saveAndRender();
-          showToast("커리큘럼을 불러왔습니다.");
+          showToast("불러오기 완료");
         } catch {
           showToast("불러올 수 없는 JSON입니다.");
         }
@@ -1016,69 +1042,57 @@
       reader.readAsText(file);
     }
 
-    els.addCourseBtn.addEventListener("click", addCourse);
-    els.addSectionBtn.addEventListener("click", addSection);
-    els.exportBtn.addEventListener("click", exportJson);
-    els.exportCoursePageBtn.addEventListener("click", exportCoursePage);
+    [
+      ["courseTitle", "title"],
+      ["categoryInput", "category"],
+      ["levelInput", "level"],
+      ["slugInput", "slug"],
+      ["tagsInput", "tags"],
+      ["hoursInput", "hours"],
+      ["descriptionInput", "description"]
+    ].forEach(([element, field]) => {
+      els[element].addEventListener("input", (event) => updateCourseField(field, event.target.value));
+      els[element].addEventListener("change", (event) => updateCourseField(field, event.target.value));
+    });
+
+    els.addChapterBtn.addEventListener("click", addChapter);
+    els.exportPageBtn.addEventListener("click", exportPage);
+    els.exportJsonBtn.addEventListener("click", exportJson);
     els.importBtn.addEventListener("click", () => els.fileInput.click());
-    els.fileInput.addEventListener("change", event => {
+    els.fileInput.addEventListener("change", (event) => {
       const file = event.target.files[0];
       if (file) importJson(file);
       event.target.value = "";
     });
 
-    els.courseList.addEventListener("click", event => {
-      const tab = event.target.closest("[data-course-id]");
-      if (!tab) return;
-      state.selectedCourseId = tab.dataset.courseId;
-      saveAndRender();
-    });
-
-    els.courseMeta.addEventListener("input", event => {
-      const field = event.target.dataset.courseField;
-      if (field) setCourseValue(field, event.target.value);
-    });
-
-    els.courseMeta.addEventListener("change", event => {
-      const field = event.target.dataset.courseField;
-      if (field) setCourseValue(field, event.target.value);
-    });
-
-    els.sections.addEventListener("input", event => {
-      const sectionEl = event.target.closest("[data-section-id]");
+    els.chapterList.addEventListener("input", (event) => {
+      const chapterEl = event.target.closest("[data-chapter-id]");
+      if (!chapterEl) return;
       const lessonEl = event.target.closest("[data-lesson-id]");
-      if (!sectionEl) return;
       if (lessonEl && event.target.dataset.lessonField) {
-        setLessonValue(sectionEl.dataset.sectionId, lessonEl.dataset.lessonId, event.target.dataset.lessonField, event.target.value);
-      } else if (event.target.dataset.sectionField) {
-        setSectionValue(sectionEl.dataset.sectionId, event.target.dataset.sectionField, event.target.value);
+        setLessonField(chapterEl.dataset.chapterId, lessonEl.dataset.lessonId, event.target.dataset.lessonField, event.target.value);
+      } else if (event.target.dataset.chapterField) {
+        setChapterField(chapterEl.dataset.chapterId, event.target.dataset.chapterField, event.target.value);
       }
     });
 
-    els.sections.addEventListener("change", event => {
-      const sectionEl = event.target.closest("[data-section-id]");
+    els.chapterList.addEventListener("change", (event) => {
+      const chapterEl = event.target.closest("[data-chapter-id]");
       const lessonEl = event.target.closest("[data-lesson-id]");
-      if (!sectionEl || !lessonEl || !event.target.dataset.lessonField) return;
-      setLessonValue(sectionEl.dataset.sectionId, lessonEl.dataset.lessonId, event.target.dataset.lessonField, event.target.value);
+      if (chapterEl && lessonEl && event.target.dataset.lessonField) {
+        setLessonField(chapterEl.dataset.chapterId, lessonEl.dataset.lessonId, event.target.dataset.lessonField, event.target.value);
+      }
     });
 
-    els.sections.addEventListener("click", event => {
+    els.chapterList.addEventListener("click", (event) => {
       const button = event.target.closest("[data-action]");
       if (!button) return;
-      const sectionEl = button.closest("[data-section-id]");
+      const chapterEl = button.closest("[data-chapter-id]");
       const lessonEl = button.closest("[data-lesson-id]");
-      const sectionId = sectionEl?.dataset.sectionId;
-      const action = button.dataset.action;
-      const course = selectedCourse();
-      const section = course.sections.find(item => item.id === sectionId);
-
-      if (action === "add-lesson") addLesson(sectionId);
-      if (action === "delete-section") deleteSection(sectionId);
-      if (action === "move-section-up") moveItem(course.sections, sectionId, -1);
-      if (action === "move-section-down") moveItem(course.sections, sectionId, 1);
-      if (action === "delete-lesson") deleteLesson(sectionId, lessonEl.dataset.lessonId);
-      if (action === "move-lesson-up") moveItem(section.lessons, lessonEl.dataset.lessonId, -1);
-      if (action === "move-lesson-down") moveItem(section.lessons, lessonEl.dataset.lessonId, 1);
+      const chapterId = chapterEl?.dataset.chapterId || button.dataset.chapterId;
+      if (button.dataset.action === "add-lesson") addLesson(chapterId);
+      if (button.dataset.action === "delete-chapter") deleteChapter(chapterId);
+      if (button.dataset.action === "delete-lesson") deleteLesson(chapterId, lessonEl.dataset.lessonId);
     });
 
     render();
