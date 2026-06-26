@@ -301,47 +301,10 @@
       background: var(--soft);
     }
 
-    .cover-row {
-      margin: 40px 0 34px 86px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .cover {
-      width: 68px;
-      height: 58px;
-      border-radius: 4px;
-      border: 2px solid #f0f0f0;
-      display: grid;
-      place-items: center;
-      position: relative;
-      color: #d7d9de;
-      background:
-        linear-gradient(135deg, transparent 52%, #e7e9ed 53% 68%, transparent 69%),
-        linear-gradient(45deg, transparent 54%, #eceef2 55% 71%, transparent 72%),
-        #fff;
-    }
-
-    .cover-plus {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: #1b1f25;
-      color: #fff;
-      display: grid;
-      place-items: center;
-      font-size: 25px;
-      line-height: 1;
-      margin-left: -24px;
-      margin-top: 40px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-    }
-
     .lessons {
       display: grid;
       gap: 26px;
-      margin-left: 72px;
+      margin: 28px 0 0 72px;
     }
 
     .lesson {
@@ -506,7 +469,6 @@
         gap: 8px;
       }
 
-      .cover-row,
       .lessons,
       .empty {
         margin-left: 38px;
@@ -773,11 +735,6 @@
             </div>
             <button class="menu" data-action="add-lesson" title="강의 추가">+</button>
             <button class="menu" data-action="delete-chapter" title="챕터 삭제">…</button>
-          </div>
-
-          <div class="cover-row">
-            <div class="cover" aria-hidden="true"></div>
-            <button class="cover-plus" data-action="add-lesson" title="강의 추가">+</button>
           </div>
 
           <div class="lessons">
