@@ -3,24 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>커리큘럼 빌더</title>
+  <title>Global Seller Hub</title>
+  <meta name="description" content="글로벌 셀링을 시작하고 성장시키는 실전 강의 허브">
   <style>
     :root {
-      --bg: #f6f7f9;
-      --panel: #ffffff;
-      --ink: #171a1f;
-      --muted: #626a78;
-      --line: #dfe3ea;
-      --soft: #eef2f6;
-      --accent: #166f63;
-      --accent-2: #b94d28;
-      --focus: #2f80ed;
-      --danger: #bf2d2d;
-      --shadow: 0 10px 28px rgba(31, 38, 50, 0.08);
+      --bg: #f5f7f8;
+      --surface: #ffffff;
+      --ink: #182027;
+      --muted: #64707d;
+      --line: #dfe5e8;
+      --teal: #11695f;
+      --teal-dark: #0e403c;
+      --amber: #c97a23;
+      --rose: #aa3d3a;
+      --blue: #285a8f;
+      --soft: #edf3f2;
+      --shadow: 0 16px 40px rgba(24, 32, 39, 0.1);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -28,1060 +32,733 @@
       color: var(--ink);
     }
 
-    button, input, textarea, select {
-      font: inherit;
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
     button {
-      border: 1px solid var(--line);
-      background: var(--panel);
-      color: var(--ink);
-      border-radius: 7px;
-      min-height: 36px;
-      padding: 0 12px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      white-space: nowrap;
+      font: inherit;
     }
 
-    button:hover { border-color: #aeb7c4; }
-    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-      outline: 2px solid var(--focus);
-      outline-offset: 1px;
+    .wrap {
+      width: min(1160px, calc(100% - 32px));
+      margin: 0 auto;
     }
 
-    .primary {
-      border-color: var(--accent);
-      background: var(--accent);
-      color: #fff;
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
     }
 
-    .danger {
-      border-color: #f0c7c7;
-      color: var(--danger);
-    }
-
-    .icon-btn {
-      width: 36px;
-      padding: 0;
-      flex: 0 0 36px;
-    }
-
-    .app {
-      min-height: 100vh;
-      display: grid;
-      grid-template-columns: 290px minmax(0, 1fr) 360px;
-    }
-
-    aside, main {
-      min-width: 0;
-    }
-
-    .sidebar {
-      background: #20252d;
-      color: #f7f9fb;
-      padding: 18px;
+    .nav {
+      min-height: 66px;
       display: flex;
-      flex-direction: column;
-      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .brand h1 {
-      margin: 0;
-      font-size: 21px;
-      line-height: 1.2;
+      gap: 10px;
+      font-weight: 800;
       letter-spacing: 0;
-    }
-
-    .sidebar button {
-      border-color: rgba(255,255,255,.18);
-      background: rgba(255,255,255,.08);
-      color: #fff;
-    }
-
-    .course-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow: auto;
-      padding-right: 2px;
-    }
-
-    .course-tab {
-      border: 1px solid rgba(255,255,255,.12);
-      background: transparent;
-      color: #dce3ea;
-      width: 100%;
-      min-height: 54px;
-      padding: 10px;
-      text-align: left;
-      justify-content: flex-start;
-      display: block;
-    }
-
-    .course-tab.active {
-      background: #ffffff;
-      border-color: #ffffff;
-      color: var(--ink);
-    }
-
-    .course-tab strong, .course-tab span {
-      display: block;
-      overflow: hidden;
-      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .course-tab strong {
-      font-size: 14px;
-      margin-bottom: 3px;
+    .mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--teal), var(--amber));
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 900;
     }
 
-    .course-tab span {
-      font-size: 12px;
-      color: inherit;
-      opacity: .72;
-    }
-
-    .workspace {
-      padding: 20px;
-      overflow: auto;
-    }
-
-    .topbar {
+    .nav-links {
       display: flex;
       align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav-links a {
+      padding: 9px 10px;
+      border-radius: 7px;
+    }
+
+    .nav-links a:hover {
+      background: var(--soft);
+      color: var(--teal-dark);
+    }
+
+    .admin-link {
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .hero {
+      min-height: 430px;
+      display: grid;
+      align-items: end;
+      background:
+        linear-gradient(90deg, rgba(12, 30, 35, 0.92), rgba(12, 30, 35, 0.68) 42%, rgba(12, 30, 35, 0.18)),
+        url("assets/global-seller-hero.png") center / cover no-repeat;
+      color: #fff;
+    }
+
+    .hero-inner {
+      padding: 76px 0 44px;
+    }
+
+    .eyebrow {
+      color: #f2b866;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0;
+      margin: 0 0 14px;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 720px;
+      font-size: clamp(38px, 6vw, 72px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .hero-copy {
+      max-width: 650px;
+      margin: 18px 0 0;
+      color: #dce7e5;
+      font-size: 18px;
+      line-height: 1.72;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      min-height: 42px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 7px;
+      padding: 0 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .btn.primary {
+      background: #fff;
+      color: var(--teal-dark);
+      border-color: #fff;
+    }
+
+    .btn.dark {
+      background: var(--teal);
+      color: #fff;
+      border-color: var(--teal);
+    }
+
+    .btn.ghost {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .section {
+      padding: 34px 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
       justify-content: space-between;
-      gap: 14px;
+      gap: 18px;
       margin-bottom: 18px;
     }
 
-    .topbar h2 {
+    .section-title {
       margin: 0;
-      font-size: 24px;
-      line-height: 1.25;
+      font-size: clamp(24px, 3vw, 34px);
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    .section-desc {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 680px;
+    }
+
+    .metrics {
+      transform: translateY(-22px);
+      margin-bottom: -2px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 26px;
+      line-height: 1.1;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .filter {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      border-radius: 7px;
+      padding: 0 12px;
+      cursor: pointer;
+    }
+
+    .filter.active {
+      border-color: var(--teal);
+      background: var(--teal);
+      color: #fff;
+    }
+
+    .course-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .course-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(24, 32, 39, 0.06);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .course-top {
+      min-height: 104px;
+      padding: 16px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--teal-dark);
+    }
+
+    .course-card:nth-child(2) .course-top {
+      background: var(--blue);
+    }
+
+    .course-card:nth-child(3) .course-top {
+      background: var(--rose);
+    }
+
+    .course-card:nth-child(4) .course-top {
+      background: #39414a;
+    }
+
+    .course-card:nth-child(5) .course-top {
+      background: var(--amber);
+    }
+
+    .course-card:nth-child(6) .course-top {
+      background: #4b5d44;
+    }
+
+    .course-kicker {
+      font-size: 12px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .course-top h3 {
+      margin: 12px 0 0;
+      font-size: 20px;
+      line-height: 1.22;
       letter-spacing: 0;
       overflow-wrap: anywhere;
     }
 
-    .actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .course-meta {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
+    .course-body {
       padding: 16px;
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    label {
-      display: grid;
-      gap: 6px;
-      color: var(--muted);
-      font-size: 12px;
-      min-width: 0;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: #fff;
-      color: var(--ink);
-      min-height: 38px;
-      padding: 8px 10px;
-    }
-
-    textarea {
-      min-height: 74px;
-      resize: vertical;
-    }
-
-    .wide { grid-column: span 2; }
-    .full { grid-column: 1 / -1; }
-
-    .sections {
+      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 14px;
     }
 
-    .section {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
+    .course-body p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.58;
+      font-size: 14px;
     }
 
-    .section-head {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 12px;
-      align-items: start;
-      padding: 14px;
-      border-bottom: 1px solid var(--line);
-      background: #fbfcfd;
-    }
-
-    .section-title {
-      display: grid;
-      grid-template-columns: 46px minmax(0, 1fr);
-      gap: 10px;
-      align-items: center;
-    }
-
-    .section-index {
-      height: 38px;
-      border-radius: 7px;
-      background: var(--soft);
+    .meta {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: var(--accent);
-    }
-
-    .section-tools {
-      display: flex;
-      gap: 6px;
       flex-wrap: wrap;
-      justify-content: flex-end;
+      gap: 6px;
     }
 
-    .lesson-list {
-      display: grid;
-      gap: 10px;
-      padding: 14px;
-    }
-
-    .lesson {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      padding: 12px;
-      display: grid;
-      grid-template-columns: 34px minmax(0, 1fr) 88px 116px 86px;
-      gap: 10px;
-      align-items: start;
-    }
-
-    .lesson-num {
-      width: 34px;
-      height: 34px;
-      border-radius: 7px;
-      background: #f2f5f7;
-      display: flex;
+    .pill {
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
+      min-height: 26px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--teal-dark);
+      padding: 0 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .course-footer {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding-top: 2px;
       color: var(--muted);
       font-size: 13px;
-      font-weight: 700;
     }
 
-    .lesson-fields {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 10px;
-    }
-
-    .lesson-title-row {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 10px;
-    }
-
-    .lesson-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      justify-content: flex-end;
-    }
-
-    .preview {
-      border-left: 1px solid var(--line);
+    .roadmap {
       background: #ffffff;
-      padding: 18px;
-      overflow: auto;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
     }
 
-    .preview h2 {
-      margin: 0 0 6px;
-      font-size: 22px;
-      line-height: 1.25;
-      letter-spacing: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .stats {
+    .roadmap-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin: 14px 0;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
     }
 
-    .stat {
-      background: var(--soft);
+    .step {
+      border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 10px;
+      background: #fbfcfd;
+      padding: 16px;
       min-width: 0;
     }
 
-    .stat strong {
-      display: block;
-      font-size: 18px;
+    .step-number {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: var(--teal);
+      color: #fff;
+      font-weight: 900;
+      margin-bottom: 12px;
     }
 
-    .stat span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 2px;
-    }
-
-    .outline {
-      border-top: 1px solid var(--line);
-      margin-top: 14px;
-      padding-top: 14px;
-    }
-
-    .outline-section {
-      margin-bottom: 16px;
-    }
-
-    .outline-section h3 {
+    .step h3 {
       margin: 0 0 8px;
-      font-size: 15px;
+      font-size: 17px;
       letter-spacing: 0;
-      overflow-wrap: anywhere;
     }
 
-    .outline ol {
+    .step p {
       margin: 0;
-      padding-left: 22px;
-      color: #333943;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
     }
 
-    .outline li {
-      margin: 6px 0;
-      overflow-wrap: anywhere;
+    .tool-band {
+      padding: 34px 0 48px;
     }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 999px;
-      background: #e8f3f0;
-      color: var(--accent);
-      padding: 3px 8px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-right: 5px;
-      margin-bottom: 5px;
-    }
-
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 20px;
-      transform: translateX(-50%);
-      background: #171a1f;
+    .tool-panel {
+      background: var(--teal-dark);
       color: #fff;
       border-radius: 8px;
-      padding: 10px 14px;
-      box-shadow: var(--shadow);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .18s ease;
-      z-index: 5;
-    }
-
-    .toast.show { opacity: 1; }
-
-    .help-text {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .empty {
-      border: 1px dashed #c2c9d3;
-      border-radius: 8px;
       padding: 24px;
-      text-align: center;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .tool-panel h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .tool-panel p {
+      margin: 0;
+      color: #d8e5e3;
+      line-height: 1.6;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 22px 0;
       color: var(--muted);
       background: #fff;
+      font-size: 14px;
     }
 
-    @media (max-width: 1180px) {
-      .app { grid-template-columns: 260px minmax(0, 1fr); }
-      .preview { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); }
-      .lesson { grid-template-columns: 34px minmax(0, 1fr); }
-      .lesson-actions { justify-content: flex-start; }
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
     }
 
-    @media (max-width: 760px) {
-      .app { display: block; }
-      .sidebar { min-height: auto; }
-      .course-meta { grid-template-columns: 1fr; }
-      .wide, .full { grid-column: auto; }
-      .topbar { align-items: stretch; flex-direction: column; }
-      .actions { justify-content: flex-start; }
-      .section-head { grid-template-columns: 1fr; }
-      .section-tools { justify-content: flex-start; }
-      .section-title { grid-template-columns: 40px minmax(0, 1fr); }
-      .lesson-fields, .lesson-title-row { grid-template-columns: 1fr; }
-      .stats { grid-template-columns: 1fr; }
+    @media (max-width: 920px) {
+      .course-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .metric-grid,
+      .roadmap-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .tool-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .nav {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 12px 0;
+      }
+
+      .nav-links {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      .hero {
+        min-height: 500px;
+        background:
+          linear-gradient(180deg, rgba(12, 30, 35, 0.95), rgba(12, 30, 35, 0.7)),
+          url("assets/global-seller-hero.png") center / cover no-repeat;
+      }
+
+      .hero-inner {
+        padding: 56px 0 36px;
+      }
+
+      .metric-grid,
+      .course-grid,
+      .roadmap-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <div class="brand">
-        <h1>커리큘럼 빌더</h1>
-        <button class="icon-btn" id="addCourseBtn" title="강의 추가">+</button>
-      </div>
-      <div class="course-list" id="courseList"></div>
-    </aside>
-
-    <main class="workspace">
-      <div class="topbar">
-        <h2 id="editorTitle">강의 편집</h2>
-        <div class="actions">
-          <button id="importBtn" title="JSON 불러오기">불러오기</button>
-          <button id="exportBtn" title="JSON 내보내기">내보내기</button>
-          <button id="exportCoursePageBtn" title="현재 강의 페이지 생성">강의 페이지 생성</button>
-          <button id="addSectionBtn" class="primary" title="섹션 추가">섹션 추가</button>
-        </div>
-      </div>
-
-      <section class="course-meta" id="courseMeta"></section>
-      <section class="sections" id="sections"></section>
-    </main>
-
-    <aside class="preview">
-      <h2 id="previewTitle"></h2>
-      <div id="previewTags"></div>
-      <div class="stats" id="stats"></div>
-      <p id="previewDescription"></p>
-      <div class="outline" id="outline"></div>
-    </aside>
-  </div>
-
-  <input id="fileInput" type="file" accept="application/json,.json" hidden>
-  <div class="toast" id="toast"></div>
-
-  <script>
-    const storageKey = "youtube-curriculum-builder-v1";
-
-    const sampleData = {
-      selectedCourseId: "course-1",
-      courses: [
-        {
-          id: "course-1",
-          title: "새 프로젝트 강의",
-          category: "웹 개발",
-          level: "입문",
-          projectType: "프로젝트 실습",
-          pageSlug: "sample-course",
-          techStack: "HTML, CSS, JavaScript",
-          estimatedHours: 4,
-          description: "유튜브 영상을 직접 연결해 하나의 강의 커리큘럼으로 구성합니다.",
-          sections: [
-            {
-              id: "section-1",
-              title: "시작하기",
-              goal: "프로젝트 목표와 개발 환경을 정리합니다.",
-              lessons: [
-                {
-                  id: "lesson-1",
-                  title: "강의 소개",
-                  youtubeUrl: "",
-                  duration: "10:00",
-                  materialUrl: "",
-                  status: "초안"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    };
-
-    let state = loadState();
-
-    const els = {
-      addCourseBtn: document.getElementById("addCourseBtn"),
-      courseList: document.getElementById("courseList"),
-      editorTitle: document.getElementById("editorTitle"),
-      courseMeta: document.getElementById("courseMeta"),
-      sections: document.getElementById("sections"),
-      addSectionBtn: document.getElementById("addSectionBtn"),
-      exportBtn: document.getElementById("exportBtn"),
-      exportCoursePageBtn: document.getElementById("exportCoursePageBtn"),
-      importBtn: document.getElementById("importBtn"),
-      fileInput: document.getElementById("fileInput"),
-      previewTitle: document.getElementById("previewTitle"),
-      previewTags: document.getElementById("previewTags"),
-      previewDescription: document.getElementById("previewDescription"),
-      stats: document.getElementById("stats"),
-      outline: document.getElementById("outline"),
-      toast: document.getElementById("toast")
-    };
-
-    function uid(prefix) {
-      return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    }
-
-    function loadState() {
-      try {
-        const saved = localStorage.getItem(storageKey);
-        return saved ? JSON.parse(saved) : structuredClone(sampleData);
-      } catch {
-        return structuredClone(sampleData);
-      }
-    }
-
-    function saveState() {
-      localStorage.setItem(storageKey, JSON.stringify(state));
-    }
-
-    function selectedCourse() {
-      return state.courses.find(course => course.id === state.selectedCourseId) || state.courses[0];
-    }
-
-    function setCourseValue(field, value) {
-      const course = selectedCourse();
-      course[field] = field === "estimatedHours" ? Number(value || 0) : value;
-      saveAndRefresh();
-    }
-
-    function setSectionValue(sectionId, field, value) {
-      const section = selectedCourse().sections.find(item => item.id === sectionId);
-      section[field] = value;
-      saveAndRefresh();
-    }
-
-    function setLessonValue(sectionId, lessonId, field, value) {
-      const section = selectedCourse().sections.find(item => item.id === sectionId);
-      const lesson = section.lessons.find(item => item.id === lessonId);
-      lesson[field] = value;
-      saveAndRefresh();
-    }
-
-    function saveAndRender() {
-      saveState();
-      render();
-    }
-
-    function saveAndRefresh() {
-      const course = selectedCourse();
-      saveState();
-      els.editorTitle.textContent = course.title || "제목 없는 강의";
-      renderCourseList(course);
-      renderPreview(course);
-    }
-
-    function showToast(message) {
-      els.toast.textContent = message;
-      els.toast.classList.add("show");
-      window.clearTimeout(showToast.timer);
-      showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1800);
-    }
-
-    function escapeHtml(value) {
-      return String(value || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function render() {
-      if (!state.courses.length) {
-        state = structuredClone(sampleData);
-        saveState();
-      }
-      const course = selectedCourse();
-      state.selectedCourseId = course.id;
-      renderCourseList(course);
-      renderCourseMeta(course);
-      renderSections(course);
-      renderPreview(course);
-    }
-
-    function renderCourseList(activeCourse) {
-      els.courseList.innerHTML = state.courses.map(course => {
-        const lessonCount = course.sections.reduce((sum, section) => sum + section.lessons.length, 0);
-        return `
-          <button class="course-tab ${course.id === activeCourse.id ? "active" : ""}" data-course-id="${course.id}">
-            <strong>${escapeHtml(course.title || "제목 없는 강의")}</strong>
-            <span>${escapeHtml(course.category || "카테고리 없음")} · ${lessonCount}개 영상</span>
-          </button>
-        `;
-      }).join("");
-    }
-
-    function renderCourseMeta(course) {
-      els.editorTitle.textContent = course.title || "제목 없는 강의";
-      els.courseMeta.innerHTML = `
-        <label class="wide">강의명
-          <input value="${escapeHtml(course.title)}" data-course-field="title">
-        </label>
-        <label>카테고리
-          <input value="${escapeHtml(course.category)}" data-course-field="category">
-        </label>
-        <label>난이도
-          <select data-course-field="level">
-            ${["입문", "초급", "중급", "고급"].map(level => `<option ${course.level === level ? "selected" : ""}>${level}</option>`).join("")}
-          </select>
-        </label>
-        <label>프로젝트 유형
-          <input value="${escapeHtml(course.projectType)}" data-course-field="projectType">
-        </label>
-        <label>페이지 파일명
-          <input value="${escapeHtml(course.pageSlug || slugify(course.title))}" placeholder="a-course" data-course-field="pageSlug">
-        </label>
-        <label>예상 시간
-          <input type="number" min="0" step="0.5" value="${escapeHtml(course.estimatedHours)}" data-course-field="estimatedHours">
-        </label>
-        <label class="wide">기술 스택
-          <input value="${escapeHtml(course.techStack)}" data-course-field="techStack">
-          <p class="help-text">예: a-course 라고 쓰면 a-course.html 파일로 생성됩니다.</p>
-        </label>
-        <label class="full">강의 설명
-          <textarea data-course-field="description">${escapeHtml(course.description)}</textarea>
-        </label>
-      `;
-    }
-
-    function renderSections(course) {
-      if (!course.sections.length) {
-        els.sections.innerHTML = `<div class="empty">아직 섹션이 없습니다.</div>`;
-        return;
-      }
-
-      els.sections.innerHTML = course.sections.map((section, sectionIndex) => `
-        <article class="section" data-section-id="${section.id}">
-          <div class="section-head">
-            <div class="section-title">
-              <div class="section-index">${sectionIndex + 1}</div>
-              <div>
-                <label>섹션명
-                  <input value="${escapeHtml(section.title)}" data-section-field="title">
-                </label>
-              </div>
-            </div>
-            <div class="section-tools">
-              <button class="icon-btn" data-action="move-section-up" title="섹션 위로">↑</button>
-              <button class="icon-btn" data-action="move-section-down" title="섹션 아래로">↓</button>
-              <button data-action="add-lesson" title="영상 레슨 추가">영상 추가</button>
-              <button class="danger icon-btn" data-action="delete-section" title="섹션 삭제">×</button>
-            </div>
-            <label class="full">섹션 목표
-              <textarea data-section-field="goal">${escapeHtml(section.goal)}</textarea>
-            </label>
-          </div>
-          <div class="lesson-list">
-            ${section.lessons.length ? section.lessons.map((lesson, lessonIndex) => renderLesson(section.id, lesson, lessonIndex)).join("") : `<div class="empty">영상 레슨을 추가하세요.</div>`}
-          </div>
-        </article>
-      `).join("");
-    }
-
-    function renderLesson(sectionId, lesson, lessonIndex) {
-      return `
-        <div class="lesson" data-lesson-id="${lesson.id}">
-          <div class="lesson-num">${lessonIndex + 1}</div>
-          <div class="lesson-fields">
-            <div class="lesson-title-row">
-              <label>영상 제목
-                <input value="${escapeHtml(lesson.title)}" data-lesson-field="title">
-              </label>
-              <label>유튜브 링크
-                <input value="${escapeHtml(lesson.youtubeUrl)}" placeholder="https://youtube.com/..." data-lesson-field="youtubeUrl">
-              </label>
-            </div>
-            <label>자료 링크
-              <input value="${escapeHtml(lesson.materialUrl)}" data-lesson-field="materialUrl">
-            </label>
-            <label>상태
-              <select data-lesson-field="status">
-                ${["초안", "촬영 완료", "편집 완료", "공개"].map(status => `<option ${lesson.status === status ? "selected" : ""}>${status}</option>`).join("")}
-              </select>
-            </label>
-          </div>
-          <label>길이
-            <input value="${escapeHtml(lesson.duration)}" placeholder="12:30" data-lesson-field="duration">
-          </label>
-          <div class="lesson-actions">
-            <button class="icon-btn" data-section-id="${sectionId}" data-action="move-lesson-up" title="영상 위로">↑</button>
-            <button class="icon-btn" data-section-id="${sectionId}" data-action="move-lesson-down" title="영상 아래로">↓</button>
-            <button class="danger icon-btn" data-section-id="${sectionId}" data-action="delete-lesson" title="영상 삭제">×</button>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderPreview(course) {
-      const lessons = course.sections.flatMap(section => section.lessons);
-      const publicLessons = lessons.filter(lesson => lesson.status === "공개").length;
-      els.previewTitle.textContent = course.title || "제목 없는 강의";
-      els.previewTags.innerHTML = [course.category, course.level, course.projectType]
-        .filter(Boolean)
-        .map(tag => `<span class="badge">${escapeHtml(tag)}</span>`)
-        .join("");
-      els.stats.innerHTML = `
-        <div class="stat"><strong>${course.sections.length}</strong><span>섹션</span></div>
-        <div class="stat"><strong>${lessons.length}</strong><span>영상</span></div>
-        <div class="stat"><strong>${publicLessons}</strong><span>공개</span></div>
-      `;
-      els.previewDescription.textContent = course.description || "";
-      els.outline.innerHTML = course.sections.map((section, index) => `
-        <div class="outline-section">
-          <h3>${index + 1}. ${escapeHtml(section.title || "제목 없는 섹션")}</h3>
-          <ol>
-            ${section.lessons.map(lesson => `<li>${escapeHtml(lesson.title || "제목 없는 영상")} ${lesson.duration ? `<span class="badge">${escapeHtml(lesson.duration)}</span>` : ""}</li>`).join("")}
-          </ol>
-        </div>
-      `).join("");
-    }
-
-    function addCourse() {
-      const course = {
-        id: uid("course"),
-        title: "새 강의",
-        category: "",
-        level: "입문",
-        projectType: "",
-        pageSlug: "",
-        techStack: "",
-        estimatedHours: 0,
-        description: "",
-        sections: []
-      };
-      state.courses.push(course);
-      state.selectedCourseId = course.id;
-      saveAndRender();
-    }
-
-    function addSection() {
-      selectedCourse().sections.push({
-        id: uid("section"),
-        title: "새 섹션",
-        goal: "",
-        lessons: []
-      });
-      saveAndRender();
-    }
-
-    function addLesson(sectionId) {
-      const section = selectedCourse().sections.find(item => item.id === sectionId);
-      section.lessons.push({
-        id: uid("lesson"),
-        title: "새 영상",
-        youtubeUrl: "",
-        duration: "",
-        materialUrl: "",
-        status: "초안"
-      });
-      saveAndRender();
-    }
-
-    function moveItem(list, id, direction) {
-      const index = list.findIndex(item => item.id === id);
-      const nextIndex = index + direction;
-      if (index < 0 || nextIndex < 0 || nextIndex >= list.length) return;
-      const [item] = list.splice(index, 1);
-      list.splice(nextIndex, 0, item);
-      saveAndRender();
-    }
-
-    function deleteSection(sectionId) {
-      const course = selectedCourse();
-      course.sections = course.sections.filter(section => section.id !== sectionId);
-      saveAndRender();
-    }
-
-    function deleteLesson(sectionId, lessonId) {
-      const section = selectedCourse().sections.find(item => item.id === sectionId);
-      section.lessons = section.lessons.filter(lesson => lesson.id !== lessonId);
-      saveAndRender();
-    }
-
-    function exportJson() {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "curriculum.json";
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast("JSON 파일을 내보냈습니다.");
-    }
-
-    function slugify(value) {
-      const fallback = "course-page";
-      const slug = String(value || "")
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9가-힣]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      return slug || fallback;
-    }
-
-    function youtubeEmbedUrl(url) {
-      const raw = String(url || "").trim();
-      if (!raw) return "";
-      try {
-        const parsed = new URL(raw);
-        let id = "";
-        if (parsed.hostname.includes("youtu.be")) {
-          id = parsed.pathname.replace("/", "");
-        } else if (parsed.searchParams.get("v")) {
-          id = parsed.searchParams.get("v");
-        } else if (parsed.pathname.includes("/shorts/")) {
-          id = parsed.pathname.split("/shorts/")[1].split("/")[0];
-        } else if (parsed.pathname.includes("/embed/")) {
-          id = parsed.pathname.split("/embed/")[1].split("/")[0];
-        }
-        return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}` : "";
-      } catch {
-        return "";
-      }
-    }
-
-    function coursePageHtml(course) {
-      const lessons = course.sections.flatMap(section => section.lessons);
-      const tags = [course.category, course.level, course.projectType].filter(Boolean);
-      const stack = String(course.techStack || "")
-        .split(",")
-        .map(item => item.trim())
-        .filter(Boolean);
-
-      return `<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(course.title || "강의 페이지")}</title>
-  <style>
-    :root {
-      --bg: #f7f8fa;
-      --ink: #171a1f;
-      --muted: #626a78;
-      --line: #dfe3ea;
-      --panel: #ffffff;
-      --accent: #166f63;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--ink); }
-    a { color: var(--accent); text-decoration: none; }
-    .hero { background: #20252d; color: white; padding: 42px 20px 34px; }
-    .wrap { width: min(1080px, calc(100% - 32px)); margin: 0 auto; }
-    .hero h1 { margin: 0 0 12px; font-size: clamp(30px, 5vw, 54px); line-height: 1.08; letter-spacing: 0; overflow-wrap: anywhere; }
-    .hero p { max-width: 760px; color: #d6dee8; font-size: 17px; line-height: 1.65; margin: 0; }
-    .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-    .tag { display: inline-flex; align-items: center; border-radius: 999px; background: rgba(255,255,255,.12); color: white; padding: 6px 10px; font-size: 13px; font-weight: 700; }
-    .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0 0; max-width: 620px; }
-    .summary div { border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 12px; background: rgba(255,255,255,.07); }
-    .summary strong { display: block; font-size: 22px; }
-    .summary span { color: #c5ced8; font-size: 13px; }
-    main { padding: 28px 0 50px; }
-    .grid { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 22px; align-items: start; }
-    .section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
-    .section-head { padding: 18px; border-bottom: 1px solid var(--line); background: #fbfcfd; }
-    .section-head h2 { margin: 0 0 6px; font-size: 21px; letter-spacing: 0; overflow-wrap: anywhere; }
-    .section-head p { margin: 0; color: var(--muted); line-height: 1.55; }
-    .lesson { padding: 16px 18px; border-bottom: 1px solid var(--line); }
-    .lesson:last-child { border-bottom: 0; }
-    .lesson h3 { margin: 0 0 10px; font-size: 17px; letter-spacing: 0; overflow-wrap: anywhere; }
-    .lesson-meta { display: flex; gap: 8px; flex-wrap: wrap; color: var(--muted); font-size: 13px; margin-bottom: 12px; }
-    .player { aspect-ratio: 16 / 9; width: 100%; border: 0; border-radius: 8px; background: #111; }
-    .no-video { border: 1px dashed #b8c1cc; border-radius: 8px; padding: 18px; color: var(--muted); background: #f8fafc; }
-    .side { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; position: sticky; top: 18px; }
-    .side h2 { margin: 0 0 12px; font-size: 17px; letter-spacing: 0; }
-    .side ul { margin: 0; padding-left: 18px; color: #333943; line-height: 1.8; }
-    @media (max-width: 820px) {
-      .summary, .grid { grid-template-columns: 1fr; }
-      .side { position: static; }
-    }
-  </style>
-</head>
-<body>
-  <header class="hero">
-    <div class="wrap">
-      <div class="tags">${tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
-      <h1>${escapeHtml(course.title || "제목 없는 강의")}</h1>
-      <p>${escapeHtml(course.description || "")}</p>
-      <div class="summary">
-        <div><strong>${course.sections.length}</strong><span>섹션</span></div>
-        <div><strong>${lessons.length}</strong><span>영상</span></div>
-        <div><strong>${escapeHtml(course.estimatedHours || 0)}</strong><span>예상 시간</span></div>
-      </div>
+  <header class="topbar">
+    <div class="wrap nav">
+      <a class="brand" href="index.html">
+        <span class="mark">G</span>
+        <span>Global Seller Hub</span>
+      </a>
+      <nav class="nav-links" aria-label="주요 메뉴">
+        <a href="#courses">강의</a>
+        <a href="#roadmap">로드맵</a>
+        <a href="#builder" class="admin-link">커리큘럼 빌더</a>
+      </nav>
     </div>
   </header>
-  <main class="wrap">
-    <div class="grid">
-      <div>
-        ${course.sections.map((section, sectionIndex) => `
-          <section class="section">
-            <div class="section-head">
-              <h2>${sectionIndex + 1}. ${escapeHtml(section.title || "제목 없는 섹션")}</h2>
-              <p>${escapeHtml(section.goal || "")}</p>
-            </div>
-            ${section.lessons.map((lesson, lessonIndex) => {
-              const embedUrl = youtubeEmbedUrl(lesson.youtubeUrl);
-              return `
-                <article class="lesson">
-                  <h3>${sectionIndex + 1}-${lessonIndex + 1}. ${escapeHtml(lesson.title || "제목 없는 영상")}</h3>
-                  <div class="lesson-meta">
-                    ${lesson.duration ? `<span>${escapeHtml(lesson.duration)}</span>` : ""}
-                    ${lesson.status ? `<span>${escapeHtml(lesson.status)}</span>` : ""}
-                    ${lesson.materialUrl ? `<a href="${escapeHtml(lesson.materialUrl)}" target="_blank" rel="noopener">자료 보기</a>` : ""}
-                  </div>
-                  ${embedUrl ? `<iframe class="player" src="${embedUrl}" title="${escapeHtml(lesson.title || "YouTube video")}" allowfullscreen></iframe>` : `<div class="no-video">아직 유튜브 링크가 입력되지 않았습니다.</div>`}
-                </article>
-              `;
-            }).join("")}
-          </section>
-        `).join("")}
+
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <p class="eyebrow">GLOBAL SELLING COURSE PLATFORM</p>
+      <h1>글로벌 셀러를 위한 실전 강의 허브</h1>
+      <p class="hero-copy">마켓플레이스 입점, 상품 소싱, 상세페이지, 물류, 광고, 운영 자동화까지 해외 판매에 필요한 과정을 코스 단위로 정리합니다.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#courses">강의 보기</a>
+        <a class="btn ghost" href="builder.html">강의 페이지 만들기</a>
       </div>
-      <aside class="side">
-        <h2>강의 정보</h2>
-        <ul>
-          <li>카테고리: ${escapeHtml(course.category || "-")}</li>
-          <li>난이도: ${escapeHtml(course.level || "-")}</li>
-          <li>프로젝트 유형: ${escapeHtml(course.projectType || "-")}</li>
-        </ul>
-        ${stack.length ? `<h2 style="margin-top:18px">기술 스택</h2><div>${stack.map(item => `<span class="tag" style="background:#e8f3f0;color:#166f63;margin:0 5px 6px 0">${escapeHtml(item)}</span>`).join("")}</div>` : ""}
-      </aside>
     </div>
+  </section>
+
+  <section class="metrics">
+    <div class="wrap metric-grid">
+      <div class="metric">
+        <strong>6</strong>
+        <span>준비 중인 코스 트랙</span>
+      </div>
+      <div class="metric">
+        <strong>4</strong>
+        <span>초보자 로드맵 단계</span>
+      </div>
+      <div class="metric">
+        <strong>100%</strong>
+        <span>유튜브 기반 무료 학습</span>
+      </div>
+      <div class="metric">
+        <strong>1</strong>
+        <span>코스별 독립 페이지 생성</span>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section class="section" id="courses">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">강의 카탈로그</h2>
+            <p class="section-desc">영상 링크를 채우면 각 코스가 독립 강의 페이지로 확장됩니다. 지금은 글로벌 셀링 플랫폼의 기본 트랙을 먼저 잡아둔 상태입니다.</p>
+          </div>
+        </div>
+
+        <div class="filters" aria-label="강의 필터">
+          <button class="filter active" data-filter="all">전체</button>
+          <button class="filter" data-filter="start">입문</button>
+          <button class="filter" data-filter="marketplace">마켓플레이스</button>
+          <button class="filter" data-filter="ops">운영</button>
+          <button class="filter" data-filter="growth">성장</button>
+        </div>
+
+        <div class="course-grid">
+          <article class="course-card" data-category="start">
+            <div class="course-top">
+              <span class="course-kicker">STARTER</span>
+              <h3>글로벌 셀링 시작하기</h3>
+            </div>
+            <div class="course-body">
+              <p>판매 국가, 플랫폼, 수익 구조, 준비물을 한 번에 정리하는 입문 코스입니다.</p>
+              <div class="meta">
+                <span class="pill">입문</span>
+                <span class="pill">4 섹션</span>
+                <span class="pill">무료</span>
+              </div>
+              <div class="course-footer">
+                <span>페이지 준비 중</span>
+                <span>→</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="course-card" data-category="marketplace">
+            <div class="course-top">
+              <span class="course-kicker">MARKETPLACE</span>
+              <h3>마켓플레이스 입점 실전</h3>
+            </div>
+            <div class="course-body">
+              <p>아마존, 이베이, 쇼피 등 판매 채널별 입점 흐름과 초기 세팅을 다룹니다.</p>
+              <div class="meta">
+                <span class="pill">초급</span>
+                <span class="pill">5 섹션</span>
+                <span class="pill">체크리스트</span>
+              </div>
+              <div class="course-footer">
+                <span>페이지 준비 중</span>
+                <span>→</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="course-card" data-category="start">
+            <div class="course-top">
+              <span class="course-kicker">PRODUCT</span>
+              <h3>상품 소싱과 리스팅</h3>
+            </div>
+            <div class="course-body">
+              <p>상품 조사, 공급처 검토, 키워드, 상세페이지 구조를 프로젝트형으로 정리합니다.</p>
+              <div class="meta">
+                <span class="pill">초급</span>
+                <span class="pill">6 섹션</span>
+                <span class="pill">실습</span>
+              </div>
+              <div class="course-footer">
+                <span>페이지 준비 중</span>
+                <span>→</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="course-card" data-category="ops">
+            <div class="course-top">
+              <span class="course-kicker">OPERATIONS</span>
+              <h3>배송, CS, 재고 운영</h3>
+            </div>
+            <div class="course-body">
+              <p>해외배송, 반품, 고객 문의, 재고 관리처럼 판매 이후의 운영 루틴을 다룹니다.</p>
+              <div class="meta">
+                <span class="pill">중급</span>
+                <span class="pill">5 섹션</span>
+                <span class="pill">운영</span>
+              </div>
+              <div class="course-footer">
+                <span>페이지 준비 중</span>
+                <span>→</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="course-card" data-category="growth">
+            <div class="course-top">
+              <span class="course-kicker">GROWTH</span>
+              <h3>광고와 매출 확장</h3>
+            </div>
+            <div class="course-body">
+              <p>광고 예산, 성과 지표, 전환율 개선, 상품군 확장을 실무 관점으로 정리합니다.</p>
+              <div class="meta">
+                <span class="pill">중급</span>
+                <span class="pill">4 섹션</span>
+                <span class="pill">성장</span>
+              </div>
+              <div class="course-footer">
+                <span>페이지 준비 중</span>
+                <span>→</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="course-card" data-category="ops">
+            <div class="course-top">
+              <span class="course-kicker">AUTOMATION</span>
+              <h3>셀러 업무 자동화</h3>
+            </div>
+            <div class="course-body">
+              <p>반복 업무를 줄이는 스프레드시트, AI, 간단한 자동화 도구 활용을 다룹니다.</p>
+              <div class="meta">
+                <span class="pill">중급</span>
+                <span class="pill">실무툴</span>
+                <span class="pill">AI</span>
+              </div>
+              <div class="course-footer">
+                <span>페이지 준비 중</span>
+                <span>→</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section roadmap" id="roadmap">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">처음 시작하는 순서</h2>
+            <p class="section-desc">막연한 해외 판매를 단계별 학습 흐름으로 바꿉니다.</p>
+          </div>
+        </div>
+        <div class="roadmap-grid">
+          <div class="step">
+            <div class="step-number">1</div>
+            <h3>시장과 채널 선택</h3>
+            <p>내 상품과 자본에 맞는 국가, 플랫폼, 판매 방식을 고릅니다.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <h3>상품과 리스팅</h3>
+            <p>팔릴 만한 상품을 찾고 구매자가 이해하는 페이지로 구성합니다.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <h3>주문과 운영</h3>
+            <p>배송, CS, 반품, 정산을 반복 가능한 업무 흐름으로 만듭니다.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <h3>광고와 확장</h3>
+            <p>지표를 보고 광고, 상품군, 자동화를 붙여 매출을 키웁니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tool-band" id="builder">
+      <div class="wrap">
+        <div class="tool-panel">
+          <div>
+            <h2>코스 페이지를 직접 생성하세요</h2>
+            <p>A 코스, B 코스처럼 강의를 만들고 섹션과 유튜브 영상을 입력하면 독립 HTML 강의 페이지로 내려받을 수 있습니다.</p>
+          </div>
+          <a class="btn primary" href="builder.html">커리큘럼 빌더 열기</a>
+        </div>
+      </div>
+    </section>
   </main>
-</body>
-</html>`;
-    }
 
-    function exportCoursePage() {
-      const course = selectedCourse();
-      const filename = `${slugify(course.pageSlug || course.title)}.html`;
-      const blob = new Blob([coursePageHtml(course)], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast(`${filename} 파일을 생성했습니다.`);
-    }
+  <footer>
+    <div class="wrap footer-row">
+      <span>© Global Seller Hub</span>
+      <span>globalsellerhub.co.kr 준비 중</span>
+    </div>
+  </footer>
 
-    function importJson(file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const nextState = JSON.parse(reader.result);
-          if (!Array.isArray(nextState.courses)) throw new Error("Invalid curriculum JSON");
-          state = nextState;
-          if (!state.selectedCourseId && state.courses[0]) state.selectedCourseId = state.courses[0].id;
-          saveAndRender();
-          showToast("커리큘럼을 불러왔습니다.");
-        } catch {
-          showToast("불러올 수 없는 JSON입니다.");
-        }
-      };
-      reader.readAsText(file);
-    }
+  <script>
+    const filters = document.querySelectorAll(".filter");
+    const cards = document.querySelectorAll(".course-card");
 
-    els.addCourseBtn.addEventListener("click", addCourse);
-    els.addSectionBtn.addEventListener("click", addSection);
-    els.exportBtn.addEventListener("click", exportJson);
-    els.exportCoursePageBtn.addEventListener("click", exportCoursePage);
-    els.importBtn.addEventListener("click", () => els.fileInput.click());
-    els.fileInput.addEventListener("change", event => {
-      const file = event.target.files[0];
-      if (file) importJson(file);
-      event.target.value = "";
+    filters.forEach((button) => {
+      button.addEventListener("click", () => {
+        const filter = button.dataset.filter;
+        filters.forEach((item) => item.classList.toggle("active", item === button));
+        cards.forEach((card) => {
+          const visible = filter === "all" || card.dataset.category === filter;
+          card.style.display = visible ? "flex" : "none";
+        });
+      });
     });
-
-    els.courseList.addEventListener("click", event => {
-      const tab = event.target.closest("[data-course-id]");
-      if (!tab) return;
-      state.selectedCourseId = tab.dataset.courseId;
-      saveAndRender();
-    });
-
-    els.courseMeta.addEventListener("input", event => {
-      const field = event.target.dataset.courseField;
-      if (field) setCourseValue(field, event.target.value);
-    });
-
-    els.courseMeta.addEventListener("change", event => {
-      const field = event.target.dataset.courseField;
-      if (field) setCourseValue(field, event.target.value);
-    });
-
-    els.sections.addEventListener("input", event => {
-      const sectionEl = event.target.closest("[data-section-id]");
-      const lessonEl = event.target.closest("[data-lesson-id]");
-      if (!sectionEl) return;
-      if (lessonEl && event.target.dataset.lessonField) {
-        setLessonValue(sectionEl.dataset.sectionId, lessonEl.dataset.lessonId, event.target.dataset.lessonField, event.target.value);
-      } else if (event.target.dataset.sectionField) {
-        setSectionValue(sectionEl.dataset.sectionId, event.target.dataset.sectionField, event.target.value);
-      }
-    });
-
-    els.sections.addEventListener("change", event => {
-      const sectionEl = event.target.closest("[data-section-id]");
-      const lessonEl = event.target.closest("[data-lesson-id]");
-      if (!sectionEl || !lessonEl || !event.target.dataset.lessonField) return;
-      setLessonValue(sectionEl.dataset.sectionId, lessonEl.dataset.lessonId, event.target.dataset.lessonField, event.target.value);
-    });
-
-    els.sections.addEventListener("click", event => {
-      const button = event.target.closest("[data-action]");
-      if (!button) return;
-      const sectionEl = button.closest("[data-section-id]");
-      const lessonEl = button.closest("[data-lesson-id]");
-      const sectionId = sectionEl?.dataset.sectionId;
-      const action = button.dataset.action;
-      const course = selectedCourse();
-      const section = course.sections.find(item => item.id === sectionId);
-
-      if (action === "add-lesson") addLesson(sectionId);
-      if (action === "delete-section") deleteSection(sectionId);
-      if (action === "move-section-up") moveItem(course.sections, sectionId, -1);
-      if (action === "move-section-down") moveItem(course.sections, sectionId, 1);
-      if (action === "delete-lesson") deleteLesson(sectionId, lessonEl.dataset.lessonId);
-      if (action === "move-lesson-up") moveItem(section.lessons, lessonEl.dataset.lessonId, -1);
-      if (action === "move-lesson-down") moveItem(section.lessons, lessonEl.dataset.lessonId, 1);
-    });
-
-    render();
   </script>
 </body>
 </html>
