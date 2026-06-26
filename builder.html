@@ -346,7 +346,7 @@
 
     .lesson {
       display: grid;
-      grid-template-columns: 26px minmax(0, 1fr) auto 42px;
+      grid-template-columns: 26px minmax(0, 1fr);
       gap: 12px;
       align-items: center;
     }
@@ -417,33 +417,6 @@
       padding: 0 7px;
       font-size: 12px;
       color: #333943;
-    }
-
-    .status-select {
-      min-height: 38px;
-      border: 0;
-      border-radius: 999px;
-      padding: 0 12px;
-      background: var(--chip-warn-bg);
-      color: var(--chip-warn);
-      font-weight: 800;
-      appearance: none;
-      text-align: center;
-    }
-
-    .status-select.done {
-      background: #e8f4ec;
-      color: var(--green);
-    }
-
-    .status-select.review {
-      background: #eef3ff;
-      color: var(--blue);
-    }
-
-    .status-select.wait {
-      background: #f2f2f3;
-      color: #6b7078;
     }
 
     .mini {
@@ -541,12 +514,6 @@
 
       .lesson {
         grid-template-columns: 24px minmax(0, 1fr);
-      }
-
-      .status-select,
-      .mini {
-        grid-column: 2;
-        justify-self: start;
       }
     }
 
@@ -846,10 +813,6 @@
               <input class="url-input" value="${escapeHtml(lesson.youtubeUrl)}" placeholder="유튜브 링크" data-lesson-field="youtubeUrl" aria-label="유튜브 링크">
             </div>
           </div>
-          <select class="status-select ${statusClass(lesson.status)}" data-lesson-field="status" aria-label="상태">
-            ${["검토 대기", "검토 중", "개선 필요", "승인"].map(status => `<option ${lesson.status === status ? "selected" : ""}>${status}</option>`).join("")}
-          </select>
-          <button class="mini" data-action="delete-lesson" data-chapter-id="${chapterId}" title="강의 삭제">…</button>
         </div>
       `;
     }
@@ -1092,7 +1055,6 @@
       const chapterId = chapterEl?.dataset.chapterId || button.dataset.chapterId;
       if (button.dataset.action === "add-lesson") addLesson(chapterId);
       if (button.dataset.action === "delete-chapter") deleteChapter(chapterId);
-      if (button.dataset.action === "delete-lesson") deleteLesson(chapterId, lessonEl.dataset.lessonId);
     });
 
     render();
