@@ -232,6 +232,12 @@
       gap: 22px;
     }
 
+    .chapter-add-row {
+      margin-top: 22px;
+      display: flex;
+      justify-content: center;
+    }
+
     .chapter {
       border-top: 1px solid #f0f0f1;
       padding-top: 30px;
@@ -549,6 +555,9 @@
         </div>
 
         <div class="chapter-list" id="chapterList"></div>
+        <div class="chapter-add-row">
+          <button class="action" id="addChapterBottomBtn"><span class="plus">+</span> 챕터 추가</button>
+        </div>
 
         <div class="footer-tools">
           <button class="action" id="importBtn">불러오기</button>
@@ -573,6 +582,7 @@
       summaryText: document.getElementById("summaryText"),
       statusLine: document.getElementById("statusLine"),
       addChapterBtn: document.getElementById("addChapterBtn"),
+      addChapterBottomBtn: document.getElementById("addChapterBottomBtn"),
       exportPageBtn: document.getElementById("exportPageBtn"),
       categoryInput: document.getElementById("categoryInput"),
       levelInput: document.getElementById("levelInput"),
@@ -787,14 +797,30 @@
     }
 
     function addChapter() {
+      const nextNumber = state.course.chapters.length + 1;
+      const chapterId = uid("chapter");
       state.course.chapters.push({
-        id: uid("chapter"),
-        title: `Chapter${state.course.chapters.length + 1}. 새 챕터`,
+        id: chapterId,
+        title: `Chapter${nextNumber}. 새 챕터`,
         complete: 0,
-        total: 0,
-        lessons: []
+        total: 1,
+        lessons: [
+          {
+            id: uid("lesson"),
+            title: "새 강의",
+            duration: "00:00",
+            status: "검토 대기",
+            youtubeUrl: "",
+            materialUrl: ""
+          }
+        ]
       });
       saveAndRender();
+      requestAnimationFrame(() => {
+        const chapter = document.querySelector(`[data-chapter-id="${chapterId}"]`);
+        chapter?.scrollIntoView({ behavior: "smooth", block: "center" });
+        chapter?.querySelector(".chapter-title")?.focus();
+      });
     }
 
     function addLesson(chapterId) {
@@ -976,6 +1002,7 @@
     });
 
     els.addChapterBtn.addEventListener("click", addChapter);
+    els.addChapterBottomBtn.addEventListener("click", addChapter);
     els.exportPageBtn.addEventListener("click", exportPage);
     els.exportJsonBtn.addEventListener("click", exportJson);
     els.importBtn.addEventListener("click", () => els.fileInput.click());
