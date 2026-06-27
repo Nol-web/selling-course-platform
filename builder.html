@@ -348,43 +348,14 @@
       color: var(--ink);
     }
 
-    .lesson-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .meta-chip {
-      min-height: 22px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      border-radius: 4px;
-      background: #f1f2f3;
-      color: #0e1116;
-      padding: 0 7px;
-      font-size: 12px;
-      line-height: 1;
-    }
-
-    .meta-input {
-      width: 62px;
-      border: 0;
-      background: transparent;
-      padding: 0;
-      font-size: 12px;
-      color: #0e1116;
-    }
-
     .url-input {
       width: min(420px, 100%);
       border: 0;
       background: #f1f2f3;
       border-radius: 4px;
-      min-height: 22px;
-      padding: 0 7px;
-      font-size: 12px;
+      min-height: 30px;
+      padding: 0 9px;
+      font-size: 13px;
       color: #333943;
     }
 
@@ -773,12 +744,7 @@
               <span class="lesson-index">${number}.</span>
               <input class="lesson-title" value="${escapeHtml(lesson.title)}" data-lesson-field="title" aria-label="강의명">
             </div>
-            <div class="lesson-meta">
-              <span class="meta-chip">▶ <input class="meta-input" value="${escapeHtml(lesson.duration)}" data-lesson-field="duration" aria-label="강의 시간"></span>
-              <span class="meta-chip">▣ 자막</span>
-              <span class="meta-chip">▤ 수업노트</span>
-              <input class="url-input" value="${escapeHtml(lesson.youtubeUrl)}" placeholder="유튜브 링크" data-lesson-field="youtubeUrl" aria-label="유튜브 링크">
-            </div>
+            <input class="url-input" value="${escapeHtml(lesson.youtubeUrl)}" placeholder="유튜브 링크" data-lesson-field="youtubeUrl" aria-label="유튜브 링크">
           </div>
         </div>
       `;
