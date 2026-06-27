@@ -61,9 +61,6 @@ using (false);
 
 create or replace function public.handle_course_profile_signup()
 returns trigger
-language plpgsql
-security definer
-set search_path = public
 as $$
 begin
   insert into public.course_profiles (
@@ -90,7 +87,10 @@ begin
 
   return new;
 end;
-$$;
+$$
+language plpgsql
+security definer
+set search_path = public;
 
 drop trigger if exists on_course_auth_user_created on auth.users;
 create trigger on_course_auth_user_created
@@ -99,9 +99,6 @@ for each row execute function public.handle_course_profile_signup();
 
 create or replace function public.enroll_from_course_invite(invite_code text)
 returns table(course_id text)
-language plpgsql
-security definer
-set search_path = public
 as $$
 declare
   target_invite public.course_invite_codes%rowtype;
@@ -133,7 +130,10 @@ begin
   where e.user_id = auth.uid()
   order by e.created_at;
 end;
-$$;
+$$
+language plpgsql
+security definer
+set search_path = public;
 
 grant execute on function public.enroll_from_course_invite(text) to authenticated;
 
