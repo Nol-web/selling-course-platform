@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Global Seller Hub Admin</title>
+  <style>
+    :root {
+      --bg: #f5f7f6;
+      --panel: #ffffff;
+      --ink: #151b20;
+      --muted: #67717a;
+      --line: #e1e7e4;
+      --brand: #12675f;
+      --brand-dark: #0d3f3b;
+      --soft: #eaf3f0;
+      --amber: #b77912;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); }
+    button, input { font: inherit; }
+    a { color: inherit; text-decoration: none; }
+
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+    }
+
+    .mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--brand), var(--amber));
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--ink);
+      padding: 0 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn.dark {
+      background: var(--brand-dark);
+      border-color: var(--brand-dark);
+      color: #fff;
+    }
+
+    .hero {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 22px 58px rgba(22, 33, 40, 0.08);
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 50px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .metric {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 8px;
+      color: var(--ink);
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .panel-title {
+      margin: 0 0 12px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .row {
+      display: grid;
+      gap: 4px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbfcfb;
+      min-width: 0;
+    }
+
+    .row strong {
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .row span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .auth {
+      max-width: 440px;
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .auth input {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0 12px;
+      background: #fff;
+    }
+
+    .notice {
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--soft);
+      color: var(--brand-dark);
+      font-weight: 800;
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      background: #11151b;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 9px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+      z-index: 20;
+    }
+
+    .toast.show { opacity: 1; }
+    [hidden] { display: none !important; }
+
+    @media (max-width: 780px) {
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .grid, .columns { grid-template-columns: 1fr; }
+      .hero { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="index.html">
+        <span class="mark">G</span>
+        <span>Global Seller Hub Admin</span>
+      </a>
+      <nav class="nav">
+        <a class="btn" href="index.html">공개 사이트</a>
+        <a class="btn" href="builder.html">커리큘럼 빌더</a>
+        <button class="btn" id="refreshBtn" type="button">새로고침</button>
+        <button class="btn" id="logoutBtn" type="button" hidden>로그아웃</button>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1>관리자 페이지</h1>
+      <p>회원가입, 초대링크, 수강권한 현황을 빠르게 확인하고 커리큘럼 제작으로 이동합니다.</p>
+
+      <form class="auth" id="loginForm">
+        <input id="emailInput" type="email" autocomplete="email" required placeholder="관리자 이메일">
+        <input id="passwordInput" type="password" autocomplete="current-password" required placeholder="비밀번호">
+        <button class="btn dark" type="submit">관리자 로그인</button>
+      </form>
+    </section>
+
+    <div class="notice" id="statusBox">관리자 계정으로 로그인하세요.</div>
+
+    <main id="dashboard" hidden>
+      <section class="grid">
+        <article class="card metric">회원<strong id="membersMetric">0</strong></article>
+        <article class="card metric">초대링크<strong id="invitesMetric">0</strong></article>
+        <article class="card metric">수강권한<strong id="enrollmentsMetric">0</strong></article>
+      </section>
+
+      <section class="columns">
+        <article class="card">
+          <h2 class="panel-title">최근 가입 회원</h2>
+          <div class="list" id="memberList"></div>
+        </article>
+        <article class="card">
+          <h2 class="panel-title">초대링크</h2>
+          <div class="list" id="inviteList"></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseUrl = "https://sokyrudauodjkekahuvw.supabase.co";
+    const supabasePublishableKey = "sb_publishable_ps7CqjUh-MJAWclht38fTA_PzqYn_rv";
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabasePublishableKey);
+    const els = {
+      loginForm: document.getElementById("loginForm"),
+      emailInput: document.getElementById("emailInput"),
+      passwordInput: document.getElementById("passwordInput"),
+      logoutBtn: document.getElementById("logoutBtn"),
+      refreshBtn: document.getElementById("refreshBtn"),
+      statusBox: document.getElementById("statusBox"),
+      dashboard: document.getElementById("dashboard"),
+      membersMetric: document.getElementById("membersMetric"),
+      invitesMetric: document.getElementById("invitesMetric"),
+      enrollmentsMetric: document.getElementById("enrollmentsMetric"),
+      memberList: document.getElementById("memberList"),
+      inviteList: document.getElementById("inviteList"),
+      toast: document.getElementById("toast")
+    };
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => els.toast.classList.remove("show"), 1800);
+    }
+
+    function setLocked(message) {
+      els.dashboard.hidden = true;
+      els.statusBox.hidden = false;
+      els.statusBox.textContent = message;
+    }
+
+    function renderOverview(data) {
+      els.membersMetric.textContent = data.members || 0;
+      els.invitesMetric.textContent = data.inviteCodes || 0;
+      els.enrollmentsMetric.textContent = data.enrollments || 0;
+
+      els.memberList.innerHTML = (data.recentMembers || []).length
+        ? data.recentMembers.map(member => `
+          <div class="row">
+            <strong>${escapeHtml(member.full_name || member.email)}</strong>
+            <span>${escapeHtml(member.email)}</span>
+          </div>
+        `).join("")
+        : `<div class="row"><span>아직 회원이 없습니다.</span></div>`;
+
+      els.inviteList.innerHTML = (data.inviteLinks || []).length
+        ? data.inviteLinks.map(invite => {
+          const link = `https://nol-web.github.io/selling-course-platform/?access=${encodeURIComponent(invite.code)}`;
+          return `
+            <div class="row">
+              <strong>${escapeHtml(invite.label || invite.code)}</strong>
+              <span>${escapeHtml(link)}</span>
+              <span>${escapeHtml((invite.course_ids || []).join(", "))}</span>
+            </div>
+          `;
+        }).join("")
+        : `<div class="row"><span>아직 초대링크가 없습니다.</span></div>`;
+
+      els.dashboard.hidden = false;
+      els.statusBox.hidden = true;
+    }
+
+    async function loadAdmin() {
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      const user = sessionData.session?.user;
+      els.loginForm.hidden = Boolean(user);
+      els.logoutBtn.hidden = !user;
+
+      if (!user) {
+        setLocked("관리자 계정으로 로그인하세요.");
+        return;
+      }
+
+      const { data: isAdmin, error: adminError } = await supabaseClient.rpc("is_course_admin");
+      if (adminError || !isAdmin) {
+        setLocked("로그인은 되었지만 관리자 권한이 없습니다. course_admins 테이블에 이 이메일을 추가해야 합니다.");
+        return;
+      }
+
+      const { data, error } = await supabaseClient.rpc("course_admin_overview");
+      if (error) {
+        console.warn(error);
+        setLocked("관리자 정보를 불러오지 못했습니다.");
+        return;
+      }
+
+      renderOverview(data || {});
+    }
+
+    els.loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email: els.emailInput.value.trim(),
+        password: els.passwordInput.value
+      });
+      if (error) {
+        showToast(error.message || "로그인에 실패했습니다.");
+        return;
+      }
+      els.passwordInput.value = "";
+      showToast("로그인되었습니다.");
+      loadAdmin();
+    });
+
+    els.logoutBtn.addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+      showToast("로그아웃했습니다.");
+      loadAdmin();
+    });
+
+    els.refreshBtn.addEventListener("click", loadAdmin);
+    loadAdmin();
+  </script>
+</body>
+</html>

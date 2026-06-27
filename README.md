@@ -58,3 +58,15 @@ SUPABASE_PUBLISHABLE_KEY=sb_publishable_ps7CqjUh-MJAWclht38fTA_PzqYn_rv
 ```
 
 `service_role`, `secret`, `JWT secret` 키는 사이트 코드에 넣지 않습니다.
+
+## 관리자 등록
+
+관리자 페이지를 쓰려면 Supabase SQL Editor에서 본인 로그인 이메일을 관리자 테이블에 추가합니다.
+
+```sql
+insert into public.course_admins (email)
+values ('내이메일@example.com')
+on conflict (email) do nothing;
+```
+
+관리자 페이지: `/admin.html`

@@ -30,9 +30,15 @@ create table if not exists public.course_enrollments (
   primary key (user_id, course_id)
 );
 
+create table if not exists public.course_admins (
+  email text primary key,
+  created_at timestamptz not null default now()
+);
+
 alter table public.course_profiles enable row level security;
 alter table public.course_invite_codes enable row level security;
 alter table public.course_enrollments enable row level security;
+alter table public.course_admins enable row level security;
 
 drop policy if exists "course_profiles_select_own" on public.course_profiles;
 create policy "course_profiles_select_own"
@@ -58,6 +64,72 @@ create policy "course_invite_codes_no_public_read"
 on public.course_invite_codes for select
 to authenticated
 using (false);
+
+drop policy if exists "course_admins_select_self" on public.course_admins;
+create policy "course_admins_select_self"
+on public.course_admins for select
+to authenticated
+using (email = auth.jwt()->>'email');
+
+create or replace function public.is_course_admin()
+returns boolean
+as $$
+begin
+  if auth.uid() is null then
+    return false;
+  end if;
+
+  return exists (
+    select 1
+    from public.course_admins a
+    where lower(a.email) = lower(auth.jwt()->>'email')
+  );
+end;
+$$
+language plpgsql
+security definer
+set search_path = public;
+
+grant execute on function public.is_course_admin() to authenticated;
+
+create or replace function public.course_admin_overview()
+returns jsonb
+as $$
+begin
+  if not public.is_course_admin() then
+    raise exception 'Admin access required';
+  end if;
+
+  return jsonb_build_object(
+    'members', (select count(*) from public.course_profiles),
+    'inviteCodes', (select count(*) from public.course_invite_codes where active = true),
+    'enrollments', (select count(*) from public.course_enrollments),
+    'recentMembers', coalesce((
+      select jsonb_agg(row_to_json(p))
+      from (
+        select email, full_name, created_at
+        from public.course_profiles
+        order by created_at desc
+        limit 8
+      ) p
+    ), '[]'::jsonb),
+    'inviteLinks', coalesce((
+      select jsonb_agg(row_to_json(i))
+      from (
+        select code, label, course_ids, active, created_at
+        from public.course_invite_codes
+        order by created_at desc
+        limit 20
+      ) i
+    ), '[]'::jsonb)
+  );
+end;
+$$
+language plpgsql
+security definer
+set search_path = public;
+
+grant execute on function public.course_admin_overview() to authenticated;
 
 create or replace function public.handle_course_profile_signup()
 returns trigger
@@ -104,8 +176,8 @@ declare
   target_invite public.course_invite_codes%rowtype;
   target_course text;
 begin
-  if auth.uid() is null then
-    raise exception 'Login is required';
+  if not public.is_course_admin() then
+    raise exception 'Admin access required';
   end if;
 
   select *
