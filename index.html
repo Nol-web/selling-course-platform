@@ -611,6 +611,39 @@
       text-align: center;
     }
 
+    .consent-box {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfd;
+    }
+
+    .consent-row {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      color: #333943;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .consent-row input {
+      min-height: 18px;
+      width: 18px;
+      margin: 1px 0 0;
+      padding: 0;
+    }
+
+    .consent-row a {
+      color: var(--teal);
+      font-weight: 900;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
     .toast {
       position: fixed;
       left: 50%;
@@ -941,6 +974,20 @@
         <label>비밀번호
           <input id="authPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="6자 이상">
         </label>
+        <div class="consent-box" id="consentBox">
+          <label class="consent-row">
+            <input id="termsConsent" type="checkbox">
+            <span><a href="terms.html" target="_blank" rel="noopener">서비스 이용약관</a>에 동의합니다. <strong>필수</strong></span>
+          </label>
+          <label class="consent-row">
+            <input id="privacyConsent" type="checkbox">
+            <span><a href="privacy.html" target="_blank" rel="noopener">개인정보 수집·이용 및 처리방침</a>에 동의합니다. <strong>필수</strong></span>
+          </label>
+          <label class="consent-row">
+            <input id="marketingConsent" type="checkbox">
+            <span>강의 소식과 이벤트 안내 수신에 동의합니다. 선택</span>
+          </label>
+        </div>
         <button class="auth-submit" id="authSubmitBtn" type="submit">회원가입</button>
         <button class="auth-switch" id="authSwitchBtn" type="button">이미 계정이 있나요? 로그인</button>
         <p class="auth-note">현재는 브라우저에만 저장되는 데모 계정입니다. 실제 서비스용 인증은 Supabase 연결 후 활성화합니다.</p>
@@ -977,6 +1024,10 @@
     const authSwitchBtn = document.getElementById("authSwitchBtn");
     const authCloseBtn = document.getElementById("authCloseBtn");
     const nameField = document.getElementById("nameField");
+    const consentBox = document.getElementById("consentBox");
+    const termsConsent = document.getElementById("termsConsent");
+    const privacyConsent = document.getElementById("privacyConsent");
+    const marketingConsent = document.getElementById("marketingConsent");
     const toast = document.getElementById("toast");
     let authMode = "signup";
 
@@ -1036,6 +1087,7 @@
         ? "무료 계정으로 내 강의실과 커리큘럼 빌더를 준비하세요."
         : "계정으로 로그인하고 강의 제작 도구를 이어서 사용하세요.";
       nameField.style.display = isSignup ? "grid" : "none";
+      consentBox.style.display = isSignup ? "grid" : "none";
       authName.required = isSignup;
       authSubmitBtn.textContent = isSignup ? "회원가입" : "로그인";
       authSwitchBtn.textContent = isSignup ? "이미 계정이 있나요? 로그인" : "처음이신가요? 회원가입";
@@ -1055,11 +1107,25 @@
       const email = authEmail.value.trim().toLowerCase();
       const name = authName.value.trim();
       const password = authPassword.value;
+      if (!termsConsent.checked || !privacyConsent.checked) {
+        showToast("필수 약관과 개인정보 동의가 필요합니다.");
+        return;
+      }
       if (accounts.some(account => account.email === email)) {
         showToast("이미 가입된 이메일입니다.");
         return;
       }
-      const account = { name, email, password };
+      const account = {
+        name,
+        email,
+        password,
+        consent: {
+          terms: true,
+          privacy: true,
+          marketing: marketingConsent.checked,
+          agreedAt: new Date().toISOString()
+        }
+      };
       accounts.push(account);
       setAccounts(accounts);
       localStorage.setItem(userKey, JSON.stringify({ name, email }));
