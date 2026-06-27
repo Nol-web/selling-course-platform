@@ -414,6 +414,44 @@
       font-size: 13px;
     }
 
+    .course-card.unlocked {
+      border-color: rgba(17, 105, 95, 0.45);
+      box-shadow: 0 14px 34px rgba(17, 105, 95, 0.13);
+    }
+
+    .access-badge {
+      display: none;
+      align-items: center;
+      min-height: 26px;
+      border-radius: 999px;
+      background: #e8f3f0;
+      color: var(--teal);
+      padding: 0 9px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .course-card.unlocked .access-badge {
+      display: inline-flex;
+    }
+
+    .invite-banner {
+      display: none;
+      margin-top: 18px;
+      max-width: 650px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.12);
+      padding: 12px 14px;
+      color: #f2f8f6;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .invite-banner.show {
+      display: block;
+    }
+
     .roadmap {
       background: #ffffff;
       border-top: 1px solid var(--line);
@@ -749,6 +787,7 @@
         <a class="btn primary" href="#courses">강의 보기</a>
         <a class="btn ghost require-auth" href="builder.html">강의 페이지 만들기</a>
       </div>
+      <div class="invite-banner" id="inviteBanner"></div>
     </div>
   </section>
 
@@ -792,7 +831,7 @@
         </div>
 
         <div class="course-grid">
-          <article class="course-card" data-category="start">
+          <article class="course-card" data-category="start" data-course-id="global-selling-start">
             <div class="course-top">
               <span class="course-kicker">STARTER</span>
               <h3>글로벌 셀링 시작하기</h3>
@@ -806,12 +845,13 @@
               </div>
               <div class="course-footer">
                 <span>페이지 준비 중</span>
+                <span class="access-badge">수강 가능</span>
                 <span>→</span>
               </div>
             </div>
           </article>
 
-          <article class="course-card" data-category="marketplace">
+          <article class="course-card" data-category="marketplace" data-course-id="marketplace-entry">
             <div class="course-top">
               <span class="course-kicker">MARKETPLACE</span>
               <h3>마켓플레이스 입점 실전</h3>
@@ -825,12 +865,13 @@
               </div>
               <div class="course-footer">
                 <span>페이지 준비 중</span>
+                <span class="access-badge">수강 가능</span>
                 <span>→</span>
               </div>
             </div>
           </article>
 
-          <article class="course-card" data-category="start">
+          <article class="course-card" data-category="start" data-course-id="product-listing">
             <div class="course-top">
               <span class="course-kicker">PRODUCT</span>
               <h3>상품 소싱과 리스팅</h3>
@@ -844,12 +885,13 @@
               </div>
               <div class="course-footer">
                 <span>페이지 준비 중</span>
+                <span class="access-badge">수강 가능</span>
                 <span>→</span>
               </div>
             </div>
           </article>
 
-          <article class="course-card" data-category="ops">
+          <article class="course-card" data-category="ops" data-course-id="seller-operations">
             <div class="course-top">
               <span class="course-kicker">OPERATIONS</span>
               <h3>배송, CS, 재고 운영</h3>
@@ -863,12 +905,13 @@
               </div>
               <div class="course-footer">
                 <span>페이지 준비 중</span>
+                <span class="access-badge">수강 가능</span>
                 <span>→</span>
               </div>
             </div>
           </article>
 
-          <article class="course-card" data-category="growth">
+          <article class="course-card" data-category="growth" data-course-id="ads-growth">
             <div class="course-top">
               <span class="course-kicker">GROWTH</span>
               <h3>광고와 매출 확장</h3>
@@ -882,12 +925,13 @@
               </div>
               <div class="course-footer">
                 <span>페이지 준비 중</span>
+                <span class="access-badge">수강 가능</span>
                 <span>→</span>
               </div>
             </div>
           </article>
 
-          <article class="course-card" data-category="ops">
+          <article class="course-card" data-category="ops" data-course-id="seller-automation">
             <div class="course-top">
               <span class="course-kicker">AUTOMATION</span>
               <h3>셀러 업무 자동화</h3>
@@ -901,6 +945,7 @@
               </div>
               <div class="course-footer">
                 <span>페이지 준비 중</span>
+                <span class="access-badge">수강 가능</span>
                 <span>→</span>
               </div>
             </div>
@@ -1008,11 +1053,13 @@
     const cards = document.querySelectorAll(".course-card");
     const authKey = "global-seller-hub-demo-auth";
     const userKey = "global-seller-hub-demo-user";
+    const inviteKey = "global-seller-hub-pending-access";
     const loginBtn = document.getElementById("loginBtn");
     const signupBtn = document.getElementById("signupBtn");
     const logoutBtn = document.getElementById("logoutBtn");
     const userChip = document.getElementById("userChip");
     const userName = document.getElementById("userName");
+    const inviteBanner = document.getElementById("inviteBanner");
     const authModal = document.getElementById("authModal");
     const authTitle = document.getElementById("authTitle");
     const authSubtitle = document.getElementById("authSubtitle");
@@ -1030,6 +1077,32 @@
     const marketingConsent = document.getElementById("marketingConsent");
     const toast = document.getElementById("toast");
     let authMode = "signup";
+    const accessBundles = {
+      starter: {
+        label: "입문 스타터팩",
+        courses: ["global-selling-start", "marketplace-entry"]
+      },
+      lazada: {
+        label: "라자다 시작 패키지",
+        courses: ["global-selling-start", "marketplace-entry", "product-listing"]
+      },
+      ops: {
+        label: "운영 실무 패키지",
+        courses: ["seller-operations", "seller-automation"]
+      },
+      all: {
+        label: "전체 무료 강의 패키지",
+        courses: ["global-selling-start", "marketplace-entry", "product-listing", "seller-operations", "ads-growth", "seller-automation"]
+      }
+    };
+    const courseNames = {
+      "global-selling-start": "글로벌 셀링 시작하기",
+      "marketplace-entry": "마켓플레이스 입점 실전",
+      "product-listing": "상품 소싱과 리스팅",
+      "seller-operations": "배송, CS, 재고 운영",
+      "ads-growth": "광고와 매출 확장",
+      "seller-automation": "셀러 업무 자동화"
+    };
 
     filters.forEach((button) => {
       button.addEventListener("click", () => {
@@ -1058,6 +1131,34 @@
       }
     }
 
+    function pendingAccess() {
+      const params = new URLSearchParams(window.location.search);
+      const fromUrl = params.get("access") || params.get("invite");
+      if (fromUrl && accessBundles[fromUrl]) {
+        localStorage.setItem(inviteKey, fromUrl);
+        return fromUrl;
+      }
+      const stored = localStorage.getItem(inviteKey);
+      return stored && accessBundles[stored] ? stored : "";
+    }
+
+    function mergeCourses(existing = [], incoming = []) {
+      return Array.from(new Set([...(existing || []), ...(incoming || [])]));
+    }
+
+    function applyAccessToUser(user, code) {
+      if (!user || !accessBundles[code]) return user;
+      return {
+        ...user,
+        courses: mergeCourses(user.courses, accessBundles[code].courses),
+        accessCodes: mergeCourses(user.accessCodes, [code])
+      };
+    }
+
+    function activeUserCourses() {
+      return savedUser()?.courses || [];
+    }
+
     function setAccounts(accounts) {
       localStorage.setItem(authKey, JSON.stringify(accounts));
     }
@@ -1077,6 +1178,31 @@
       logoutBtn.hidden = !isLoggedIn;
       userChip.style.display = isLoggedIn ? "inline-flex" : "none";
       userName.textContent = user?.name || user?.email || "";
+      updateCourseAccess();
+      updateInviteBanner();
+    }
+
+    function updateCourseAccess() {
+      const unlocked = activeUserCourses();
+      document.querySelectorAll(".course-card").forEach((card) => {
+        card.classList.toggle("unlocked", unlocked.includes(card.dataset.courseId));
+      });
+    }
+
+    function updateInviteBanner() {
+      const code = pendingAccess();
+      if (!code) {
+        inviteBanner.classList.remove("show");
+        inviteBanner.textContent = "";
+        return;
+      }
+      const bundle = accessBundles[code];
+      const names = bundle.courses.map(id => courseNames[id]).filter(Boolean).join(", ");
+      const user = savedUser();
+      inviteBanner.classList.add("show");
+      inviteBanner.textContent = user
+        ? `${bundle.label} 수강권이 계정에 연결되어 있습니다: ${names}`
+        : `${bundle.label} 초대 링크로 접속했습니다. 회원가입하면 자동으로 수강 가능해집니다: ${names}`;
     }
 
     function openAuth(mode = "signup") {
@@ -1119,6 +1245,8 @@
         name,
         email,
         password,
+        courses: [],
+        accessCodes: [],
         consent: {
           terms: true,
           privacy: true,
@@ -1126,12 +1254,20 @@
           agreedAt: new Date().toISOString()
         }
       };
-      accounts.push(account);
+      const code = pendingAccess();
+      const accountWithAccess = applyAccessToUser(account, code);
+      accounts.push(accountWithAccess);
       setAccounts(accounts);
-      localStorage.setItem(userKey, JSON.stringify({ name, email }));
+      localStorage.setItem(userKey, JSON.stringify({
+        name,
+        email,
+        courses: accountWithAccess.courses,
+        accessCodes: accountWithAccess.accessCodes
+      }));
+      if (code) localStorage.removeItem(inviteKey);
       closeAuth();
       updateAuthUi();
-      showToast("회원가입이 완료되었습니다.");
+      showToast(code ? "회원가입 완료. 초대 강의가 열렸습니다." : "회원가입이 완료되었습니다.");
     }
 
     function login() {
@@ -1143,10 +1279,22 @@
         showToast("이메일 또는 비밀번호를 확인하세요.");
         return;
       }
-      localStorage.setItem(userKey, JSON.stringify({ name: account.name, email: account.email }));
+      const code = pendingAccess();
+      const updated = applyAccessToUser(account, code);
+      if (code) {
+        const accounts = savedAccounts().map(item => item.email === updated.email ? updated : item);
+        setAccounts(accounts);
+        localStorage.removeItem(inviteKey);
+      }
+      localStorage.setItem(userKey, JSON.stringify({
+        name: updated.name,
+        email: updated.email,
+        courses: updated.courses || [],
+        accessCodes: updated.accessCodes || []
+      }));
       closeAuth();
       updateAuthUi();
-      showToast("로그인되었습니다.");
+      showToast(code ? "로그인 완료. 초대 강의가 열렸습니다." : "로그인되었습니다.");
     }
 
     loginBtn.addEventListener("click", () => openAuth("login"));
