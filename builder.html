@@ -444,6 +444,86 @@
       background: #fcfcfd;
     }
 
+    .invite-panel {
+      margin-top: 28px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fbfcfb;
+      display: grid;
+      gap: 14px;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .panel-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .invite-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .course-select-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .course-check {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .course-check input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--brand);
+      flex: 0 0 auto;
+    }
+
+    .link-output {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+    }
+
+    .link-output input {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 11px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
     .footer-tools {
       display: flex;
       justify-content: flex-end;
@@ -492,6 +572,12 @@
       .wide,
       .full {
         grid-column: auto;
+      }
+
+      .invite-fields,
+      .course-select-grid,
+      .link-output {
+        grid-template-columns: 1fr;
       }
 
       .chapter-row {
@@ -583,6 +669,29 @@
           <button class="action" id="addChapterBottomBtn"><span class="plus">+</span> 챕터 추가</button>
         </div>
 
+        <section class="invite-panel" id="invitePanel">
+          <div class="panel-head">
+            <div>
+              <h2>초대링크 생성</h2>
+              <p>선택한 강의만 자동으로 수강 가능해지는 가입 링크를 만듭니다.</p>
+            </div>
+            <button class="action dark" id="saveInviteBtn" type="button">초대링크 만들기</button>
+          </div>
+          <div class="invite-fields">
+            <label class="field">링크 이름
+              <input id="inviteLabelInput" placeholder="예: 라자다 1기 수강권">
+            </label>
+            <label class="field">초대 코드
+              <input id="inviteCodeInput" placeholder="예: lazada-1">
+            </label>
+          </div>
+          <div class="course-select-grid" id="inviteCourseList"></div>
+          <div class="link-output">
+            <input id="inviteLinkOutput" readonly placeholder="초대링크가 여기에 생성됩니다.">
+            <button class="action" id="copyInviteBtn" type="button">복사</button>
+          </div>
+        </section>
+
         <div class="footer-tools">
           <button class="action" id="importBtn">불러오기</button>
           <button class="action" id="exportJsonBtn">JSON 내보내기</button>
@@ -594,8 +703,21 @@
   <input class="file-input" id="fileInput" type="file" accept="application/json,.json">
   <div class="toast" id="toast"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const storageKey = "global-seller-hub-builder-v2";
+    const supabaseUrl = "https://sokyrudauodjkekahuvw.supabase.co";
+    const supabasePublishableKey = "sb_publishable_ps7CqjUh-MJAWclht38fTA_PzqYn_rv";
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabasePublishableKey);
+    const siteBaseUrl = "https://nol-web.github.io/selling-course-platform/";
+    const platformCourses = [
+      { id: "global-selling-start", title: "글로벌 셀링 시작하기" },
+      { id: "marketplace-entry", title: "마켓플레이스 입점 실전" },
+      { id: "product-listing", title: "상품 소싱과 리스팅" },
+      { id: "seller-operations", title: "배송, CS, 재고 운영" },
+      { id: "ads-growth", title: "광고와 매출 확장" },
+      { id: "seller-automation", title: "셀러 업무 자동화" }
+    ];
 
     const state = {
       course: loadCourse()
@@ -615,6 +737,12 @@
       hoursInput: document.getElementById("hoursInput"),
       descriptionInput: document.getElementById("descriptionInput"),
       chapterList: document.getElementById("chapterList"),
+      inviteCourseList: document.getElementById("inviteCourseList"),
+      inviteLabelInput: document.getElementById("inviteLabelInput"),
+      inviteCodeInput: document.getElementById("inviteCodeInput"),
+      saveInviteBtn: document.getElementById("saveInviteBtn"),
+      inviteLinkOutput: document.getElementById("inviteLinkOutput"),
+      copyInviteBtn: document.getElementById("copyInviteBtn"),
       importBtn: document.getElementById("importBtn"),
       exportJsonBtn: document.getElementById("exportJsonBtn"),
       fileInput: document.getElementById("fileInput"),
@@ -699,6 +827,25 @@
       return slug || "course-page";
     }
 
+    function inviteCodeSlug(value) {
+      const slug = String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      return slug || `invite-${Date.now()}`;
+    }
+
+    function inviteCourseOptions() {
+      const currentId = slugify(state.course.slug || state.course.title);
+      const currentTitle = state.course.title || "현재 편집 중인 강의";
+      const options = [...platformCourses];
+      if (currentId && !options.some(course => course.id === currentId)) {
+        options.unshift({ id: currentId, title: `${currentTitle} · 현재 편집 중` });
+      }
+      return options;
+    }
+
     function allLessons() {
       return state.course.chapters.flatMap(chapter => chapter.lessons);
     }
@@ -741,9 +888,26 @@
     function render() {
       syncFields();
       renderSummary();
+      renderInviteCourses();
       els.chapterList.innerHTML = state.course.chapters.length
         ? state.course.chapters.map(renderChapter).join("")
         : `<div class="empty">챕터를 추가하세요.</div>`;
+    }
+
+    function renderInviteCourses() {
+      const checked = new Set(selectedInviteCourses());
+      els.inviteCourseList.innerHTML = inviteCourseOptions().map((course) => `
+        <label class="course-check">
+          <input type="checkbox" value="${escapeHtml(course.id)}" ${checked.has(course.id) ? "checked" : ""}>
+          <span>${escapeHtml(course.title)}</span>
+        </label>
+      `).join("");
+    }
+
+    function selectedInviteCourses() {
+      if (!els.inviteCourseList) return [];
+      return [...els.inviteCourseList.querySelectorAll("input[type='checkbox']:checked")]
+        .map(input => input.value);
     }
 
     function renderSummary() {
@@ -1007,6 +1171,65 @@
       reader.readAsText(file);
     }
 
+    async function saveInviteLink() {
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      if (!sessionData.session) {
+        showToast("공개 사이트에서 로그인한 뒤 다시 시도하세요.");
+        return;
+      }
+
+      const courseIds = selectedInviteCourses();
+      if (!courseIds.length) {
+        showToast("수강 가능하게 할 강의를 선택하세요.");
+        return;
+      }
+
+      const label = els.inviteLabelInput.value.trim() || `${state.course.title} 수강권`;
+      const code = inviteCodeSlug(els.inviteCodeInput.value || label);
+
+      els.saveInviteBtn.disabled = true;
+      els.saveInviteBtn.textContent = "저장 중...";
+
+      const { data, error } = await supabaseClient.rpc("save_course_invite", {
+        invite_code: code,
+        invite_label: label,
+        invite_course_ids: courseIds
+      });
+
+      els.saveInviteBtn.disabled = false;
+      els.saveInviteBtn.textContent = "초대링크 만들기";
+
+      if (error) {
+        console.warn(error);
+        showToast("초대링크를 저장하지 못했습니다.");
+        return;
+      }
+
+      const saved = Array.isArray(data) ? data[0] : data;
+      const savedCode = saved?.code || code;
+      const link = `${siteBaseUrl}?access=${encodeURIComponent(savedCode)}`;
+      els.inviteCodeInput.value = savedCode;
+      els.inviteLinkOutput.value = link;
+      showToast("초대링크 생성 완료");
+    }
+
+    async function copyInviteLink() {
+      const link = els.inviteLinkOutput.value.trim();
+      if (!link) {
+        showToast("먼저 초대링크를 만드세요.");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(link);
+        showToast("초대링크 복사 완료");
+      } catch {
+        els.inviteLinkOutput.select();
+        document.execCommand("copy");
+        showToast("초대링크 복사 완료");
+      }
+    }
+
     [
       ["courseTitle", "title"],
       ["categoryInput", "category"],
@@ -1024,6 +1247,8 @@
     els.addChapterBottomBtn.addEventListener("click", addChapter);
     els.exportPageBtn.addEventListener("click", exportPage);
     els.exportJsonBtn.addEventListener("click", exportJson);
+    els.saveInviteBtn.addEventListener("click", saveInviteLink);
+    els.copyInviteBtn.addEventListener("click", copyInviteLink);
     els.importBtn.addEventListener("click", () => els.fileInput.click());
     els.fileInput.addEventListener("change", (event) => {
       const file = event.target.files[0];

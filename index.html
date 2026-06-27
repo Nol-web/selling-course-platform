@@ -1123,12 +1123,13 @@
     function pendingAccess() {
       const params = new URLSearchParams(window.location.search);
       const fromUrl = params.get("access") || params.get("invite");
-      if (fromUrl && accessBundles[fromUrl]) {
-        localStorage.setItem(inviteKey, fromUrl);
-        return fromUrl;
+      const cleanCode = String(fromUrl || "").trim().toLowerCase();
+      if (cleanCode && /^[a-z0-9-]{3,48}$/.test(cleanCode)) {
+        localStorage.setItem(inviteKey, cleanCode);
+        return cleanCode;
       }
       const stored = localStorage.getItem(inviteKey);
-      return stored && accessBundles[stored] ? stored : "";
+      return stored && /^[a-z0-9-]{3,48}$/.test(stored) ? stored : "";
     }
 
     function activeUserCourses() {
@@ -1190,6 +1191,7 @@
       const { data } = await supabaseClient.auth.getSession();
       currentUser = data.session?.user || null;
       await loadProfileAndCourses(currentUser);
+      if (currentUser) await applyPendingInvite();
       updateAuthUi();
     }
 
@@ -1220,12 +1222,18 @@
         return;
       }
       const bundle = accessBundles[code];
-      const names = bundle.courses.map(id => courseNames[id]).filter(Boolean).join(", ");
+      const names = bundle?.courses?.map(id => courseNames[id]).filter(Boolean).join(", ") || "";
       const user = currentUser;
       inviteBanner.classList.add("show");
+      if (bundle) {
+        inviteBanner.textContent = user
+          ? `${bundle.label} 수강권이 계정에 연결되었습니다: ${names}`
+          : `${bundle.label} 초대 링크로 접속했습니다. 회원가입하면 자동으로 수강 가능해집니다: ${names}`;
+        return;
+      }
       inviteBanner.textContent = user
-        ? `${bundle.label} 수강권이 계정에 연결되었습니다: ${names}`
-        : `${bundle.label} 초대 링크로 접속했습니다. 회원가입하면 자동으로 수강 가능해집니다: ${names}`;
+        ? "초대 링크 수강권이 계정에 연결되었습니다."
+        : "초대 링크로 접속했습니다. 회원가입하면 선택된 강의가 자동으로 열립니다.";
     }
 
     function openAuth(mode = "signup") {

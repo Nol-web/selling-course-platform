@@ -137,6 +137,56 @@ set search_path = public;
 
 grant execute on function public.enroll_from_course_invite(text) to authenticated;
 
+create or replace function public.save_course_invite(
+  invite_code text,
+  invite_label text,
+  invite_course_ids text[]
+)
+returns table(code text, label text, course_ids text[])
+as $$
+declare
+  clean_code text;
+begin
+  if auth.uid() is null then
+    raise exception 'Login is required';
+  end if;
+
+  clean_code := lower(regexp_replace(coalesce(invite_code, ''), '[^a-z0-9-]', '-', 'g'));
+  clean_code := trim(both '-' from clean_code);
+
+  if length(clean_code) < 3 or length(clean_code) > 48 then
+    raise exception 'Invite code must be 3-48 characters';
+  end if;
+
+  if array_length(invite_course_ids, 1) is null then
+    raise exception 'Select at least one course';
+  end if;
+
+  insert into public.course_invite_codes (code, label, course_ids, active)
+  values (
+    clean_code,
+    coalesce(nullif(trim(coalesce(invite_label, '')), ''), clean_code),
+    invite_course_ids,
+    true
+  )
+  on conflict (code) do update
+  set
+    label = excluded.label,
+    course_ids = excluded.course_ids,
+    active = true;
+
+  return query
+  select i.code, i.label, i.course_ids
+  from public.course_invite_codes i
+  where i.code = clean_code;
+end;
+$$
+language plpgsql
+security definer
+set search_path = public;
+
+grant execute on function public.save_course_invite(text, text, text[]) to authenticated;
+
 insert into public.course_invite_codes (code, label, course_ids)
 values
   ('starter', '입문 스타터팩', array['global-selling-start', 'marketplace-entry']),
