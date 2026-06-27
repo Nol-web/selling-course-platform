@@ -1035,7 +1035,7 @@
         </div>
         <button class="auth-submit" id="authSubmitBtn" type="submit">회원가입</button>
         <button class="auth-switch" id="authSwitchBtn" type="button">이미 계정이 있나요? 로그인</button>
-        <p class="auth-note">현재는 브라우저에만 저장되는 데모 계정입니다. 실제 서비스용 인증은 Supabase 연결 후 활성화합니다.</p>
+        <p class="auth-note">회원정보와 수강권한은 Supabase에 안전하게 저장됩니다.</p>
       </form>
     </div>
   </div>
@@ -1048,11 +1048,13 @@
   </footer>
   <div class="toast" id="toast"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const filters = document.querySelectorAll(".filter");
     const cards = document.querySelectorAll(".course-card");
-    const authKey = "global-seller-hub-demo-auth";
-    const userKey = "global-seller-hub-demo-user";
+    const supabaseUrl = "https://sokyrudauodjkekahuvw.supabase.co";
+    const supabasePublishableKey = "sb_publishable_ps7CqjUh-MJAWclht38fTA_PzqYn_rv";
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabasePublishableKey);
     const inviteKey = "global-seller-hub-pending-access";
     const loginBtn = document.getElementById("loginBtn");
     const signupBtn = document.getElementById("signupBtn");
@@ -1077,6 +1079,9 @@
     const marketingConsent = document.getElementById("marketingConsent");
     const toast = document.getElementById("toast");
     let authMode = "signup";
+    let currentUser = null;
+    let currentProfile = null;
+    let currentCourses = [];
     const accessBundles = {
       starter: {
         label: "입문 스타터팩",
@@ -1115,22 +1120,6 @@
       });
     });
 
-    function savedUser() {
-      try {
-        return JSON.parse(localStorage.getItem(userKey));
-      } catch {
-        return null;
-      }
-    }
-
-    function savedAccounts() {
-      try {
-        return JSON.parse(localStorage.getItem(authKey)) || [];
-      } catch {
-        return [];
-      }
-    }
-
     function pendingAccess() {
       const params = new URLSearchParams(window.location.search);
       const fromUrl = params.get("access") || params.get("invite");
@@ -1142,25 +1131,8 @@
       return stored && accessBundles[stored] ? stored : "";
     }
 
-    function mergeCourses(existing = [], incoming = []) {
-      return Array.from(new Set([...(existing || []), ...(incoming || [])]));
-    }
-
-    function applyAccessToUser(user, code) {
-      if (!user || !accessBundles[code]) return user;
-      return {
-        ...user,
-        courses: mergeCourses(user.courses, accessBundles[code].courses),
-        accessCodes: mergeCourses(user.accessCodes, [code])
-      };
-    }
-
     function activeUserCourses() {
-      return savedUser()?.courses || [];
-    }
-
-    function setAccounts(accounts) {
-      localStorage.setItem(authKey, JSON.stringify(accounts));
+      return currentCourses;
     }
 
     function showToast(message) {
@@ -1170,14 +1142,65 @@
       showToast.timer = setTimeout(() => toast.classList.remove("show"), 1800);
     }
 
+    async function loadProfileAndCourses(user) {
+      currentProfile = null;
+      currentCourses = [];
+      if (!user) return;
+
+      const [{ data: profile }, { data: enrollments, error: enrollmentsError }] = await Promise.all([
+        supabaseClient
+          .from("course_profiles")
+          .select("full_name,email")
+          .eq("id", user.id)
+          .maybeSingle(),
+        supabaseClient
+          .from("course_enrollments")
+          .select("course_id")
+          .eq("user_id", user.id)
+      ]);
+
+      if (enrollmentsError) {
+        console.warn(enrollmentsError);
+      }
+
+      currentProfile = profile;
+      currentCourses = (enrollments || []).map((item) => item.course_id);
+    }
+
+    async function applyPendingInvite() {
+      const code = pendingAccess();
+      if (!code || !currentUser) return false;
+
+      const { data, error } = await supabaseClient.rpc("enroll_from_course_invite", {
+        invite_code: code
+      });
+
+      if (error) {
+        console.warn(error);
+        showToast("초대 링크를 확인하지 못했습니다.");
+        return false;
+      }
+
+      currentCourses = (data || []).map((item) => item.course_id);
+      localStorage.removeItem(inviteKey);
+      return true;
+    }
+
+    async function refreshSession() {
+      const { data } = await supabaseClient.auth.getSession();
+      currentUser = data.session?.user || null;
+      await loadProfileAndCourses(currentUser);
+      updateAuthUi();
+    }
+
     function updateAuthUi() {
-      const user = savedUser();
+      const user = currentUser;
       const isLoggedIn = Boolean(user);
       loginBtn.hidden = isLoggedIn;
       signupBtn.hidden = isLoggedIn;
       logoutBtn.hidden = !isLoggedIn;
       userChip.style.display = isLoggedIn ? "inline-flex" : "none";
-      userName.textContent = user?.name || user?.email || "";
+      userName.textContent = currentProfile?.full_name || user?.email || "";
       updateCourseAccess();
       updateInviteBanner();
     }
@@ -1198,10 +1221,10 @@
       }
       const bundle = accessBundles[code];
       const names = bundle.courses.map(id => courseNames[id]).filter(Boolean).join(", ");
-      const user = savedUser();
+      const user = currentUser;
       inviteBanner.classList.add("show");
       inviteBanner.textContent = user
-        ? `${bundle.label} 수강권이 계정에 연결되어 있습니다: ${names}`
+        ? `${bundle.label} 수강권이 계정에 연결되었습니다: ${names}`
         : `${bundle.label} 초대 링크로 접속했습니다. 회원가입하면 자동으로 수강 가능해집니다: ${names}`;
     }
 
@@ -1228,8 +1251,7 @@
       authForm.reset();
     }
 
-    function signup() {
-      const accounts = savedAccounts();
+    async function signup() {
       const email = authEmail.value.trim().toLowerCase();
       const name = authName.value.trim();
       const password = authPassword.value;
@@ -1237,72 +1259,80 @@
         showToast("필수 약관과 개인정보 동의가 필요합니다.");
         return;
       }
-      if (accounts.some(account => account.email === email)) {
-        showToast("이미 가입된 이메일입니다.");
-        return;
-      }
-      const account = {
-        name,
+
+      authSubmitBtn.disabled = true;
+      authSubmitBtn.textContent = "처리 중...";
+
+      const { data, error } = await supabaseClient.auth.signUp({
         email,
         password,
-        courses: [],
-        accessCodes: [],
-        consent: {
-          terms: true,
-          privacy: true,
-          marketing: marketingConsent.checked,
-          agreedAt: new Date().toISOString()
+        options: {
+          data: {
+            full_name: name,
+            terms_accepted: true,
+            privacy_accepted: true,
+            marketing_accepted: marketingConsent.checked,
+            course_app: true
+          }
         }
-      };
-      const code = pendingAccess();
-      const accountWithAccess = applyAccessToUser(account, code);
-      accounts.push(accountWithAccess);
-      setAccounts(accounts);
-      localStorage.setItem(userKey, JSON.stringify({
-        name,
-        email,
-        courses: accountWithAccess.courses,
-        accessCodes: accountWithAccess.accessCodes
-      }));
-      if (code) localStorage.removeItem(inviteKey);
-      closeAuth();
-      updateAuthUi();
-      showToast(code ? "회원가입 완료. 초대 강의가 열렸습니다." : "회원가입이 완료되었습니다.");
-    }
+      });
 
-    function login() {
-      const accounts = savedAccounts();
-      const email = authEmail.value.trim().toLowerCase();
-      const password = authPassword.value;
-      const account = accounts.find(item => item.email === email && item.password === password);
-      if (!account) {
-        showToast("이메일 또는 비밀번호를 확인하세요.");
+      authSubmitBtn.disabled = false;
+      authSubmitBtn.textContent = "회원가입";
+
+      if (error) {
+        showToast(error.message || "회원가입에 실패했습니다.");
         return;
       }
-      const code = pendingAccess();
-      const updated = applyAccessToUser(account, code);
-      if (code) {
-        const accounts = savedAccounts().map(item => item.email === updated.email ? updated : item);
-        setAccounts(accounts);
-        localStorage.removeItem(inviteKey);
+
+      currentUser = data.user || null;
+      if (data.session) {
+        await loadProfileAndCourses(currentUser);
+        const invited = await applyPendingInvite();
+        closeAuth();
+        updateAuthUi();
+        showToast(invited ? "회원가입 완료. 초대 강의가 열렸습니다." : "회원가입이 완료되었습니다.");
+        return;
       }
-      localStorage.setItem(userKey, JSON.stringify({
-        name: updated.name,
-        email: updated.email,
-        courses: updated.courses || [],
-        accessCodes: updated.accessCodes || []
-      }));
+
+      closeAuth();
+      showToast("가입 확인 메일을 보냈습니다. 이메일 확인 후 로그인하세요.");
+    }
+
+    async function login() {
+      const email = authEmail.value.trim().toLowerCase();
+      const password = authPassword.value;
+
+      authSubmitBtn.disabled = true;
+      authSubmitBtn.textContent = "처리 중...";
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+      authSubmitBtn.disabled = false;
+      authSubmitBtn.textContent = "로그인";
+
+      if (error) {
+        showToast(error.message || "이메일 또는 비밀번호를 확인하세요.");
+        return;
+      }
+
+      currentUser = data.user || null;
+      await loadProfileAndCourses(currentUser);
+      const invited = await applyPendingInvite();
       closeAuth();
       updateAuthUi();
-      showToast(code ? "로그인 완료. 초대 강의가 열렸습니다." : "로그인되었습니다.");
+      showToast(invited ? "로그인 완료. 초대 강의가 열렸습니다." : "로그인되었습니다.");
     }
 
     loginBtn.addEventListener("click", () => openAuth("login"));
     signupBtn.addEventListener("click", () => openAuth("signup"));
-    logoutBtn.addEventListener("click", () => {
-      localStorage.removeItem(userKey);
+    logoutBtn.addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+      currentUser = null;
+      currentProfile = null;
+      currentCourses = [];
       updateAuthUi();
-      showToast("로그아웃되었습니다.");
+      showToast("로그아웃했습니다.");
     });
     authCloseBtn.addEventListener("click", closeAuth);
     authModal.addEventListener("click", (event) => {
@@ -1316,14 +1346,20 @@
 
     document.querySelectorAll(".require-auth").forEach((link) => {
       link.addEventListener("click", (event) => {
-        if (savedUser()) return;
+        if (currentUser) return;
         event.preventDefault();
         openAuth("signup");
         showToast("회원가입 또는 로그인 후 사용할 수 있습니다.");
       });
     });
 
-    updateAuthUi();
+    supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+      currentUser = session?.user || null;
+      await loadProfileAndCourses(currentUser);
+      updateAuthUi();
+    });
+
+    refreshSession();
   </script>
 </body>
 </html>
