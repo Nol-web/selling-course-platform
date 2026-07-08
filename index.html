@@ -1049,6 +1049,8 @@
     const cards = document.querySelectorAll(".course-card");
     const supabaseUrl = "https://sokyrudauodjkekahuvw.supabase.co";
     const supabasePublishableKey = "sb_publishable_ps7CqjUh-MJAWclht38fTA_PzqYn_rv";
+    const appUrl = "https://nol-web.github.io/selling-course-platform/";
+    const resetPasswordUrl = "https://nol-web.github.io/selling-course-platform/reset-password.html";
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabasePublishableKey);
     const inviteKey = "global-seller-hub-pending-access";
     const loginBtn = document.getElementById("loginBtn");
@@ -1305,6 +1307,7 @@
         email,
         password,
         options: {
+          emailRedirectTo: appUrl,
           data: {
             full_name: name,
             terms_accepted: true,
@@ -1373,7 +1376,7 @@
       resetPasswordBtn.disabled = true;
       resetPasswordBtn.textContent = "메일 보내는 중...";
       const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-        redirectTo: "https://nol-web.github.io/selling-course-platform/reset-password.html"
+        redirectTo: resetPasswordUrl
       });
       resetPasswordBtn.disabled = false;
       resetPasswordBtn.textContent = "비밀번호를 잊으셨나요?";
