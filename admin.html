@@ -192,6 +192,16 @@
       background: #fff;
     }
 
+    .link-btn {
+      border: 0;
+      background: transparent;
+      color: var(--brand);
+      font-weight: 900;
+      cursor: pointer;
+      justify-self: center;
+      padding: 4px 0;
+    }
+
     .content-form {
       display: grid;
       gap: 12px;
@@ -292,6 +302,7 @@
         <input id="emailInput" type="email" autocomplete="email" required placeholder="관리자 이메일">
         <input id="passwordInput" type="password" autocomplete="current-password" required placeholder="비밀번호">
         <button class="btn dark" type="submit">관리자 로그인</button>
+        <button class="link-btn" id="resetPasswordBtn" type="button">비밀번호 찾기</button>
       </form>
     </section>
 
@@ -343,6 +354,7 @@
       loginForm: document.getElementById("loginForm"),
       emailInput: document.getElementById("emailInput"),
       passwordInput: document.getElementById("passwordInput"),
+      resetPasswordBtn: document.getElementById("resetPasswordBtn"),
       logoutBtn: document.getElementById("logoutBtn"),
       refreshBtn: document.getElementById("refreshBtn"),
       statusBox: document.getElementById("statusBox"),
@@ -524,6 +536,30 @@
       els.passwordInput.value = "";
       showToast("로그인되었습니다.");
       loadAdmin();
+    });
+
+    els.resetPasswordBtn.addEventListener("click", async () => {
+      const email = els.emailInput.value.trim().toLowerCase();
+      if (!email) {
+        showToast("이메일을 먼저 입력하세요.");
+        els.emailInput.focus();
+        return;
+      }
+
+      els.resetPasswordBtn.disabled = true;
+      els.resetPasswordBtn.textContent = "메일 보내는 중...";
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: "https://nol-web.github.io/selling-course-platform/reset-password.html"
+      });
+      els.resetPasswordBtn.disabled = false;
+      els.resetPasswordBtn.textContent = "비밀번호 찾기";
+
+      if (error) {
+        showToast(error.message || "재설정 메일을 보내지 못했습니다.");
+        return;
+      }
+
+      showToast("비밀번호 재설정 메일을 보냈습니다.");
     });
 
     els.logoutBtn.addEventListener("click", async () => {

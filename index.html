@@ -1029,6 +1029,7 @@
         </div>
         <button class="auth-submit" id="authSubmitBtn" type="submit">회원가입</button>
         <button class="auth-switch" id="authSwitchBtn" type="button">이미 계정이 있나요? 로그인</button>
+        <button class="auth-switch" id="resetPasswordBtn" type="button" hidden>비밀번호를 잊으셨나요?</button>
         <p class="auth-note">회원정보와 수강권한은 Supabase에 안전하게 저장됩니다.</p>
       </form>
     </div>
@@ -1065,6 +1066,7 @@
     const authPassword = document.getElementById("authPassword");
     const authSubmitBtn = document.getElementById("authSubmitBtn");
     const authSwitchBtn = document.getElementById("authSwitchBtn");
+    const resetPasswordBtn = document.getElementById("resetPasswordBtn");
     const authCloseBtn = document.getElementById("authCloseBtn");
     const nameField = document.getElementById("nameField");
     const consentBox = document.getElementById("consentBox");
@@ -1275,6 +1277,7 @@
       authName.required = isSignup;
       authSubmitBtn.textContent = isSignup ? "회원가입" : "로그인";
       authSwitchBtn.textContent = isSignup ? "이미 계정이 있나요? 로그인" : "처음이신가요? 회원가입";
+      resetPasswordBtn.hidden = isSignup;
       authModal.classList.add("open");
       authModal.setAttribute("aria-hidden", "false");
       setTimeout(() => (isSignup ? authName : authEmail).focus(), 20);
@@ -1359,6 +1362,30 @@
       showToast(invited ? "로그인 완료. 초대 강의가 열렸습니다." : "로그인되었습니다.");
     }
 
+    async function sendPasswordReset() {
+      const email = authEmail.value.trim().toLowerCase();
+      if (!email) {
+        showToast("이메일을 먼저 입력하세요.");
+        authEmail.focus();
+        return;
+      }
+
+      resetPasswordBtn.disabled = true;
+      resetPasswordBtn.textContent = "메일 보내는 중...";
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: "https://nol-web.github.io/selling-course-platform/reset-password.html"
+      });
+      resetPasswordBtn.disabled = false;
+      resetPasswordBtn.textContent = "비밀번호를 잊으셨나요?";
+
+      if (error) {
+        showToast(error.message || "재설정 메일을 보내지 못했습니다.");
+        return;
+      }
+
+      showToast("비밀번호 재설정 메일을 보냈습니다.");
+    }
+
     loginBtn.addEventListener("click", () => openAuth("login"));
     signupBtn.addEventListener("click", () => openAuth("signup"));
     logoutBtn.addEventListener("click", async () => {
@@ -1374,6 +1401,7 @@
       if (event.target === authModal) closeAuth();
     });
     authSwitchBtn.addEventListener("click", () => openAuth(authMode === "signup" ? "login" : "signup"));
+    resetPasswordBtn.addEventListener("click", sendPasswordReset);
     authForm.addEventListener("submit", (event) => {
       event.preventDefault();
       authMode === "signup" ? signup() : login();
