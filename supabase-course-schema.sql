@@ -35,10 +35,17 @@ create table if not exists public.course_admins (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.site_sections (
+  key text primary key,
+  content jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
 alter table public.course_profiles enable row level security;
 alter table public.course_invite_codes enable row level security;
 alter table public.course_enrollments enable row level security;
 alter table public.course_admins enable row level security;
+alter table public.site_sections enable row level security;
 
 drop policy if exists "course_profiles_select_own" on public.course_profiles;
 create policy "course_profiles_select_own"
@@ -71,6 +78,12 @@ on public.course_admins for select
 to authenticated
 using (email = auth.jwt()->>'email');
 
+drop policy if exists "site_sections_public_read" on public.site_sections;
+create policy "site_sections_public_read"
+on public.site_sections for select
+to anon, authenticated
+using (true);
+
 create or replace function public.is_course_admin()
 returns boolean
 as $$
@@ -91,6 +104,57 @@ security definer
 set search_path = public;
 
 grant execute on function public.is_course_admin() to authenticated;
+
+create or replace function public.get_site_section(section_key text)
+returns jsonb
+as $$
+begin
+  return coalesce(
+    (
+      select s.content
+      from public.site_sections s
+      where s.key = section_key
+    ),
+    '{}'::jsonb
+  );
+end;
+$$
+language plpgsql
+security definer
+set search_path = public;
+
+grant execute on function public.get_site_section(text) to anon, authenticated;
+
+create or replace function public.save_site_section(
+  section_key text,
+  section_content jsonb
+)
+returns jsonb
+as $$
+begin
+  if not public.is_course_admin() then
+    raise exception 'Admin access required';
+  end if;
+
+  if coalesce(trim(section_key), '') = '' then
+    raise exception 'Section key is required';
+  end if;
+
+  insert into public.site_sections (key, content, updated_at)
+  values (section_key, coalesce(section_content, '{}'::jsonb), now())
+  on conflict (key) do update
+  set
+    content = excluded.content,
+    updated_at = now();
+
+  return public.get_site_section(section_key);
+end;
+$$
+language plpgsql
+security definer
+set search_path = public;
+
+grant execute on function public.save_site_section(text, jsonb) to authenticated;
 
 create or replace function public.course_admin_overview()
 returns jsonb
@@ -176,8 +240,8 @@ declare
   target_invite public.course_invite_codes%rowtype;
   target_course text;
 begin
-  if not public.is_course_admin() then
-    raise exception 'Admin access required';
+  if auth.uid() is null then
+    raise exception 'Login is required';
   end if;
 
   select *
@@ -219,8 +283,8 @@ as $$
 declare
   clean_code text;
 begin
-  if auth.uid() is null then
-    raise exception 'Login is required';
+  if not public.is_course_admin() then
+    raise exception 'Admin access required';
   end if;
 
   clean_code := lower(regexp_replace(coalesce(invite_code, ''), '[^a-z0-9-]', '-', 'g'));
@@ -270,3 +334,31 @@ set
   label = excluded.label,
   course_ids = excluded.course_ids,
   active = true;
+
+insert into public.site_sections (key, content)
+values (
+  'roadmap',
+  '{
+    "title": "처음 시작하는 순서",
+    "description": "막연한 해외 판매를 단계별 학습 흐름으로 바꿉니다.",
+    "steps": [
+      {
+        "title": "시장과 채널 선택",
+        "body": "내 상품과 자본에 맞는 국가, 플랫폼, 판매 방식을 고릅니다."
+      },
+      {
+        "title": "상품과 리스팅",
+        "body": "팔릴 만한 상품을 찾고 구매자가 이해하는 페이지로 구성합니다."
+      },
+      {
+        "title": "주문과 운영",
+        "body": "배송, CS, 반품, 정산을 반복 가능한 업무 흐름으로 만듭니다."
+      },
+      {
+        "title": "광고와 확장",
+        "body": "지표를 보고 광고, 상품군, 자동화를 붙여 매출을 키웁니다."
+      }
+    ]
+  }'::jsonb
+)
+on conflict (key) do nothing;
